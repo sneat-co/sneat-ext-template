@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# customize.sh — turn this template into a concrete Sneat extension app.
+#
+# Usage:
+#   ./customize.sh <extension-id>          # e.g. ./customize.sh gameboard
+#
+# Renames the placeholder `template` extension to <extension-id> across the
+# whole Nx workspace: the app (template-app -> <id>-app), the extension lib
+# triad (libs/extensions/template -> libs/extensions/<id>, ext-template-* ->
+# ext-<id>-*, @sneat/extension-template-* -> @sneat/extension-<id>-*), symbols
+# (provideTemplateInternal, TemplateHomePage, TEMPLATE_SERVICE, ...), the appId
+# and titles. It does NOT touch pnpm-lock.yaml — run `pnpm install` afterwards
+# so pnpm reconciles the renamed workspace packages.
+#
+# The replacement is intentionally TARGETED (not a blind s/template/<id>/g) so
+# it never corrupts Angular keywords like `templateUrl`, inline `template:`, or
+# `<ng-template>`.
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "usage: ./customize.sh <extension-id>   (lowercase letters/digits, e.g. gameboard)" >&2
+  exit 2
+fi
+
+id="$1"
+if [[ ! "$id" =~ ^[a-z][a-z0-9]*$ ]]; then
+  echo "error: <extension-id> must be a single lowercase token [a-z][a-z0-9]* (got '$id')" >&2
+  exit 2
+fi
+if [[ ! -d apps/template-app ]]; then
+  echo "error: run this from the template repo root (apps/template-app not found)" >&2
+  exit 1
+fi
+
+# Case variants.
+Id="$(printf '%s' "$id" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"  # gameboard -> Gameboard
+UP="$(printf '%s' "$id" | tr '[:lower:]' '[:upper:]')"                            # gameboard -> GAMEBOARD
+
+echo "Customizing template -> '$id' (Id=$Id, UP=$UP)"
+
+# --- 1. Rename directories containing 'template' (deepest first) ---
+find . -depth -type d -name '*template*' \
+  -not -path './node_modules/*' -not -path './.git/*' \
+  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' |
+  while read -r d; do
+    nd="$(dirname "$d")/$(basename "$d" | sed "s/template/$id/g")"
+    mv "$d" "$nd"
+  done
+
+# --- 2. Rename files whose names contain 'template' ---
+find . -type f -name '*template*' \
+  -not -path './node_modules/*' -not -path './.git/*' \
+  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' |
+  while read -r f; do
+    nf="$(dirname "$f")/$(basename "$f" | sed "s/template/$id/g")"
+    mv "$f" "$nf"
+  done
+
+# --- 3. Targeted content replacement across text files (NOT the lockfile) ---
+grep -rIl -E "template[-/]|templateApp|'template'|\"template\"|scope:template|Template|TEMPLATE" . \
+  --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist \
+  --exclude-dir=.nx --exclude-dir=.angular --exclude=pnpm-lock.yaml |
+  while read -r f; do
+    sed -i '' \
+      -e "s|template/|$id/|g" \
+      -e "s/template-/$id-/g" \
+      -e "s/templateApp/${id}App/g" \
+      -e "s/'template'/'$id'/g" \
+      -e "s/\"template\"/\"$id\"/g" \
+      -e "s/scope:template/scope:$id/g" \
+      -e "s/TEMPLATE/$UP/g" \
+      -e "s/Template/$Id/g" \
+      "$f"
+  done
+
+# --- 4. Clean up ---
+rm -f customize.sh
+
+echo
+echo "Done. Next:"
+echo "  pnpm install            # reconcile renamed workspace packages"
+echo "  pnpm exec nx build ${id}-app"

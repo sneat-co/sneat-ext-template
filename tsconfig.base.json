@@ -1,0 +1,30 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sneat/extension-template-contract": [
+        "./libs/extensions/template/contract/src/index.ts"
+      ],
+      "@sneat/extension-template-shared": [
+        "./libs/extensions/template/shared/src/index.ts"
+      ],
+      "@sneat/extension-template-internal": [
+        "./libs/extensions/template/internal/src/index.ts"
+      ]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}
