@@ -1,0 +1,193 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ServiceCard from "../components/ServiceCard.astro";
+
+// TODO(copy): replace all placeholder copy below with your product's messaging.
+// This is a generic, working skeleton — see surpriseless.com / requoter.app for
+// real, fleshed-out examples built from the same components.
+
+const steps = [
+  { icon: "1️⃣", title: "First step", text: "Describe the first thing a user does." },
+  { icon: "2️⃣", title: "Second step", text: "Describe the second thing a user does." },
+  { icon: "3️⃣", title: "Third step", text: "Describe the third thing a user does." },
+  { icon: "4️⃣", title: "Fourth step", text: "Describe the payoff." },
+];
+
+const why = [
+  { icon: "⏱️", title: "Save time" },
+  { icon: "💸", title: "Save money" },
+  { icon: "🔒", title: "You own your data" },
+];
+---
+
+<BaseLayout>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>A clear, benefit-led <span class="accent">headline.</span></h1>
+      <p class="lede">
+        One or two sentences that explain the promise of your product in plain
+        language — what changes for the user, stated as an outcome.
+      </p>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/app">Get started free</a>
+        <a class="btn btn-secondary" href="#how-it-works">See how it works</a>
+      </div>
+
+      <p class="microcopy">✨ A few trust signals · 🔒 Privacy-first · 🆓 Free to start</p>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how-it-works" class="section">
+    <div class="container">
+      <div class="text-center section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three or four simple steps</h2>
+      </div>
+      <div class="grid grid-4">
+        {steps.map((s) => (
+          <div class="step">
+            <span class="step-icon" aria-hidden="true">{s.icon}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="section soft">
+    <div class="container">
+      <div class="text-center section-head">
+        <p class="eyebrow">Features</p>
+        <h2>What you get today — and what's coming</h2>
+      </div>
+
+      <div class="grid grid-2 featured">
+        <ServiceCard
+          icon="✅"
+          title="A live capability"
+          examples="Describe a thing the product does today. Use status='live' and an href to drive the primary action."
+          status="live"
+          href="/app"
+          cta="Try it"
+        />
+        <ServiceCard
+          icon="🧩"
+          title="Something on the roadmap"
+          examples="Describe a capability that's coming soon. Use status='soon' to show a 'Coming soon' pill."
+          status="soon"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section id="why" class="section">
+    <div class="container">
+      <div class="text-center section-head">
+        <p class="eyebrow">Why us</p>
+        <h2>The reasons to choose this</h2>
+      </div>
+      <div class="grid grid-3 why">
+        {why.map((w) => (
+          <div class="why-tile">
+            <span aria-hidden="true">{w.icon}</span>
+            <h3>{w.title}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section cta-band">
+    <div class="container text-center">
+      <h2>A closing call to action</h2>
+      <p>One line that removes the last bit of friction — it's free, fast, private, etc.</p>
+      <a class="btn btn-primary" href="/app">Get started free</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    background: linear-gradient(
+      135deg,
+      var(--brand-hero-1) 0%,
+      var(--brand-hero-2) 100%
+    );
+    padding-block: var(--space-5);
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+  }
+  .hero .accent {
+    color: var(--color-accent);
+  }
+  .lede {
+    font-size: 1.15rem;
+    max-width: 52ch;
+    margin-inline: auto;
+    color: var(--brand-ink);
+    opacity: 0.82;
+  }
+  .cta-row {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--space-3);
+  }
+  .microcopy {
+    margin-top: var(--space-2);
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .step {
+    text-align: center;
+    padding: var(--space-2);
+  }
+  .step-icon {
+    font-size: 2rem;
+    display: block;
+  }
+  .step h3 {
+    font-size: 1.1rem;
+    margin-top: 0.4rem;
+  }
+
+  .featured {
+    align-items: stretch;
+    max-width: 880px;
+    margin-inline: auto;
+  }
+
+  .why-tile {
+    background: var(--brand-hero-1);
+    border-radius: var(--brand-radius);
+    padding: var(--space-3);
+    text-align: center;
+  }
+  .why-tile span {
+    font-size: 1.6rem;
+  }
+  .why-tile h3 {
+    font-size: 1rem;
+    margin: 0.4rem 0 0;
+  }
+
+  .cta-band {
+    background: var(--brand-soft);
+    text-align: center;
+  }
+  .cta-band .btn {
+    margin-top: var(--space-1);
+  }
+</style>

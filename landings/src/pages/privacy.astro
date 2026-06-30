@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Privacy — Template"
+  description="How Template handles your information: privacy-first, you own your data."
+>
+  <section class="section">
+    <div class="container prose">
+      <p class="eyebrow">Privacy</p>
+      <h1>Your information, handled with care</h1>
+      <p>
+        TODO(copy): write your privacy stance. Keep it plain-language and honest.
+        Below are starter headings you can adapt.
+      </p>
+
+      <h2>You own your data</h2>
+      <p>
+        Your data belongs to you — you can review, update and remove it at any
+        time, and it is never sold.
+      </p>
+
+      <h2>Privacy-first by design</h2>
+      <p>
+        State what you collect, why, and what you deliberately don't do with it.
+      </p>
+
+      <h2>This is an early page</h2>
+      <p>
+        This product is in active development. This page will grow into a full
+        privacy policy as it launches. Questions in the meantime? Reach us via
+        the <a href="https://sneat.co" target="_blank" rel="noopener">Sneat platform</a>.
+      </p>
+
+      <p class="back"><a href="/">← Back to home</a></p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .prose {
+    max-width: 720px;
+  }
+  .prose h1 {
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    margin-bottom: var(--space-3);
+  }
+  .prose h2 {
+    font-size: 1.25rem;
+    margin-top: var(--space-4);
+  }
+  .back {
+    margin-top: var(--space-4);
+    font-weight: 600;
+  }
+</style>

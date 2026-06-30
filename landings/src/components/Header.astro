@@ -1,0 +1,89 @@
+---
+// TODO(copy): set your nav links (each points at a section id on the home page).
+const links = [
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#features", label: "Features" },
+  { href: "#why", label: "Why us" },
+];
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <!-- `Template` is renamed to your extension id (capitalized) by customize.sh.
+         Optionally add a TLD span, e.g. <span class="tld">.com</span>. -->
+    <a href="/" class="brand" aria-label="Template home">Template</a>
+
+    <nav aria-label="Primary">
+      <ul>
+        {links.map((l) => (
+          <li><a href={l.href}>{l.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <!-- The signed-in app mounts under a path prefix (see site-hosting-pattern). -->
+    <a href="/app" class="btn signin">Sign in</a>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 64px;
+  }
+  .brand {
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--color-text);
+  }
+  .brand:hover {
+    text-decoration: none;
+  }
+  .tld {
+    color: var(--color-accent);
+  }
+  nav {
+    margin-left: auto;
+  }
+  nav ul {
+    display: flex;
+    gap: var(--space-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+  nav a:hover {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .signin {
+    background: var(--color-text);
+    color: #fff;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.9rem;
+  }
+  .signin:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 820px) {
+    nav {
+      display: none;
+    }
+  }
+</style>

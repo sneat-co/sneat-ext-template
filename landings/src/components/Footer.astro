@@ -1,0 +1,100 @@
+---
+// TODO(copy): set the footer tagline and links.
+const year = 2026;
+---
+
+<footer class="site-footer">
+  <div class="container cols">
+    <div class="brand-col">
+      <a href="/" class="brand" aria-label="Template home">Template</a>
+      <p>A short one-line description of your product.</p>
+    </div>
+
+    <nav class="col" aria-label="Product">
+      <h3>Product</h3>
+      <ul>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#why">Why us</a></li>
+        <li><a href="/app">Sign in</a></li>
+      </ul>
+    </nav>
+
+    <nav class="col" aria-label="More">
+      <h3>More</h3>
+      <ul>
+        <li>
+          <a href="https://sneat.co" target="_blank" rel="noopener"
+            >Sneat platform</a
+          >
+        </li>
+        <li><a href="/privacy">Privacy</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container legal">
+    <p>&copy; {year} Template · built on the Sneat platform.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-soft);
+    padding-block: var(--space-4) var(--space-2);
+    margin-top: var(--space-5);
+  }
+  .cols {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+  .brand {
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--color-text);
+  }
+  .brand:hover {
+    text-decoration: none;
+  }
+  .tld {
+    color: var(--color-accent);
+  }
+  .col h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-1);
+  }
+  .col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .col a {
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+  .col a:hover {
+    color: var(--color-text);
+  }
+  .legal {
+    margin-top: var(--space-3);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+  .legal p {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  @media (min-width: 720px) {
+    .cols {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+</style>

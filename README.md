@@ -26,6 +26,7 @@ libs/extensions/template/
   contract/            # @sneat/extension-template-contract  — tokens & DTOs
   internal/            # @sneat/extension-template-internal   — service impls + provideTemplateInternal()
   shared/              # @sneat/extension-template-shared     — pages/components
+landings/              # static Astro marketing site (the public apex) — see docs/HOSTING.md
 ```
 
 ## Create a new extension
@@ -52,6 +53,22 @@ pnpm exec nx serve template-app          # dev server
 pnpm exec nx build template-app          # production build -> dist/apps/template-app/browser
 pnpm exec nx run-many -t lint test build
 ```
+
+## Landing site (`landings/`)
+
+A static **Astro** marketing site that owns the public apex domain, deployed to
+Cloudflare separately from the app (the **site-hosting-pattern**: landing at `/`,
+app under `/app/`). The scaffold is apex-only by default with `example.com`
+placeholders.
+
+```sh
+cd landings && pnpm install && pnpm dev
+```
+
+**Read [`docs/HOSTING.md`](docs/HOSTING.md) before deploying** — it covers custom
+domains, the apex-only recommendation, how to add a `www → apex` redirect (a zone
+Redirect Rule, *not* a worker), and the exact Cloudflare token scopes each step
+needs. Reference implementations: `surpriseless` and `requoter`.
 
 ## Notes
 

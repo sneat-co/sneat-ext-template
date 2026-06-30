@@ -63,7 +63,11 @@ grep -rIl -E "template[-/]|templateApp|'template'|\"template\"|scope:template|Te
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist \
   --exclude-dir=.nx --exclude-dir=.angular --exclude=pnpm-lock.yaml |
   while read -r f; do
+    # Protect the CSS Grid `grid-template[-columns|-rows|-areas]` keyword from
+    # the `template-` rule below (used by the landings/ stylesheet), then
+    # restore it. Without this, `grid-template-columns` -> `grid-<id>-columns`.
     sed -i '' \
+      -e "s/grid-template/@@GRIDTPL@@/g" \
       -e "s|template/|$id/|g" \
       -e "s/template-/$id-/g" \
       -e "s/templateApp/${id}App/g" \
@@ -72,6 +76,7 @@ grep -rIl -E "template[-/]|templateApp|'template'|\"template\"|scope:template|Te
       -e "s/scope:template/scope:$id/g" \
       -e "s/TEMPLATE/$UP/g" \
       -e "s/Template/$Id/g" \
+      -e "s/@@GRIDTPL@@/grid-template/g" \
       "$f"
   done
 
