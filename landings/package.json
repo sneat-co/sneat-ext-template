@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && pnpm run build:app && node scripts/assemble-app.mjs",
+    "build:landing": "astro build",
+    "build:app": "cd .. && npx nx build template-app --base-href=/",
     "preview": "astro preview",
     "astro": "astro"
   },

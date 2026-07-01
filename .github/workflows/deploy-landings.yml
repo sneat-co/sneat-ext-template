@@ -1,17 +1,22 @@
-name: Deploy landings (Cloudflare)
+name: Deploy landings + app (Cloudflare)
 
-# Manual deploy of the Astro landing site (landings/) to Cloudflare
-# (Workers static assets) at your apex domain. Manual (workflow_dispatch) on
-# purpose: it requires the CLOUDFLARE_* repository secrets, so it must not run
-# automatically until those are set. Once the secrets exist, switch the trigger
-# to `push: branches: [main]` (with `paths: [landings/**]`) for auto-deploy.
+# Manual deploy of the single product origin to Cloudflare (Workers static assets
+# + a Worker that splits landing vs the root-mounted Angular app). `landings/pnpm
+# build` builds BOTH the Astro landing and the Angular app, then assembles them
+# into one dist/ (landings/scripts/assemble-app.mjs, landings/worker.js) — so this
+# job installs deps for BOTH the repo root (for the app build) and landings/.
+# Manual (workflow_dispatch) on purpose: it requires the CLOUDFLARE_* repository
+# secrets, so it must not run automatically until those are set. Once the secrets
+# exist, switch the trigger to `push: branches: [main]` (paths: [landings/**,
+# apps/**, libs/**]) for auto-deploy.
 #
-# Standalone (not the shared cf-deploy.yml): that reusable workflow builds with
-# `nx build`, but landings is an Astro project built with `pnpm build`.
+# Standalone (not the shared cf-deploy.yml): that reusable workflow builds with a
+# single `nx build`, but landings is an Astro project whose `pnpm build`
+# orchestrates the app build + assembly.
 #
 # The worker name + custom-domain route(s) are declared in
-# landings/wrangler.jsonc. See landings/../docs/HOSTING.md for the full setup
-# (custom domains, apex-vs-www, token scopes).
+# landings/wrangler.jsonc. See docs/HOSTING.md for the full setup
+# (routing model, custom domains, apex-vs-www, token scopes).
 
 on:
   workflow_dispatch:
@@ -26,12 +31,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm + Node
+      - name: Setup pnpm + Node (repo root — for the Angular app build)
+        uses: sneat-co/cicd/actions/setup-pnpm-node@main
+        with:
+          working-directory: .
+
+      - name: Setup pnpm + Node (landings)
         uses: sneat-co/cicd/actions/setup-pnpm-node@main
         with:
           working-directory: landings
 
-      - name: Build
+      - name: Build combined distribution (landing + root-mounted app)
         working-directory: landings
         run: pnpm build
 
