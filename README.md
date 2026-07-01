@@ -29,6 +29,58 @@ libs/extensions/template/
 landings/              # static Astro marketing site (the public apex) — see docs/HOSTING.md
 ```
 
+## Wiring extension services (DI)
+
+Consumers depend only on **`contract`** tokens; the **`internal`** lib binds those
+tokens to implementations. There are two places to bind, and the choice matters
+for startup cost. Full rationale in the
+[frontend-apps standard](https://github.com/sneat-co/sneat-libs/blob/main/docs/extension-standards/frontend-apps.md).
+
+**1. Root register function — `provideTemplateInternal()` (default).** One function
+binds **every** always-on contract token; the app calls it once at bootstrap
+(`apps/template-app/src/main.ts`). Single wiring call, single audit site, no
+unbound-token crashes.
+
+```ts
+// libs/extensions/template/internal/src/lib/provide-template-internal.ts
+export function provideTemplateInternal(): Provider[] {
+  return [ListService, { provide: TEMPLATE_SERVICE, useExisting: ListService }];
+}
+```
+
+**2. Lazy, route-scoped providers (for heavy, route-only capabilities).** When a
+capability is reached on **one route** and drags in a **heavy or cross-extension
+dependency** (e.g. a sibling extension's service that is *not* `providedIn:'root'`),
+do **not** bind it at root — a user who never opens that route would pay for it.
+Ship a route bundle whose `providers` create a child injector, so those services
+load **only when the route activates**. `internal` may import `shared`, so the
+route can lazy-load the shared page while the page still injects only the token:
+
+```ts
+// libs/extensions/template/internal/src/lib/provide-template-<feature>.ts
+export function provideTemplate<Feature>(): Provider[] {
+  return [
+    HeavyDep,                                       // not providedIn:'root'
+    <Feature>Service,
+    { provide: <FEATURE>_SERVICE, useExisting: <Feature>Service },
+  ];
+}
+
+export const template<Feature>Routes: Route[] = [
+  {
+    path: '<feature>/:id',
+    providers: [...provideTemplate<Feature>()],     // route-scoped, lazy
+    loadComponent: () =>
+      import('@sneat/extension-template-shared').then((m) => m.<Feature>PageComponent),
+  },
+];
+```
+
+The host mounts `...template<Feature>Routes` under its space shell; the same export
+serves both `template-app` and the main Sneat app. Rule of thumb: **bind in
+`provideTemplateInternal()` by default; move a binding to a route-scoped bundle
+when it is used on one route only *and* pulls in a heavy/cross-extension dep.**
+
 ## Create a new extension
 
 Clone this template into your target repo, then run the rename script with your
