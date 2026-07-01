@@ -40,10 +40,17 @@ UP="$(printf '%s' "$id" | tr '[:lower:]' '[:upper:]')"                          
 
 echo "Customizing template -> '$id' (Id=$Id, UP=$UP)"
 
+# Preserved-directory guards. When customize.sh is run for an in-place
+# re-scaffold of an existing extension repo, that repo may carry preserved
+# copies of prior work (e.g. `legacy-frontend/` from a `git mv`, a Go `backend/`
+# module). Those are NOT the template and must never be renamed/rewritten.
+# (Fable: added after the budgetus re-scaffold corrupted legacy-frontend files.)
+
 # --- 1. Rename directories containing 'template' (deepest first) ---
 find . -depth -type d -name '*template*' \
   -not -path './node_modules/*' -not -path './.git/*' \
-  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' |
+  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' \
+  -not -path './legacy-*/*' -not -path './backend/*' |
   while read -r d; do
     nd="$(dirname "$d")/$(basename "$d" | sed "s/template/$id/g")"
     mv "$d" "$nd"
@@ -52,22 +59,33 @@ find . -depth -type d -name '*template*' \
 # --- 2. Rename files whose names contain 'template' ---
 find . -type f -name '*template*' \
   -not -path './node_modules/*' -not -path './.git/*' \
-  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' |
+  -not -path './dist/*' -not -path './.nx/*' -not -path './.angular/*' \
+  -not -path './legacy-*/*' -not -path './backend/*' |
   while read -r f; do
     nf="$(dirname "$f")/$(basename "$f" | sed "s/template/$id/g")"
     mv "$f" "$nf"
   done
 
 # --- 3. Targeted content replacement across text files (NOT the lockfile) ---
-grep -rIl -E "template[-/]|templateApp|'template'|\"template\"|scope:template|Template|TEMPLATE" . \
+grep -rIl -E "template[-/]|templateApp|template[A-Z]|'template'|\"template\"|scope:template|Template|TEMPLATE" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist \
-  --exclude-dir=.nx --exclude-dir=.angular --exclude=pnpm-lock.yaml |
+  --exclude-dir=.nx --exclude-dir=.angular \
+  --exclude-dir='legacy-*' --exclude-dir=backend --exclude=pnpm-lock.yaml |
   while read -r f; do
     # Protect the CSS Grid `grid-template[-columns|-rows|-areas]` keyword from
     # the `template-` rule below (used by the landings/ stylesheet), then
     # restore it. Without this, `grid-template-columns` -> `grid-<id>-columns`.
+    # camelCase identifiers the template exports with a lowercase `template`
+    # prefix (e.g. `templateRoutes`, `templateSpaceRoutes`, `templateDbo`).
+    # These have no `-`/`/`/quote delimiter so the rules below miss them; list
+    # them EXPLICITLY rather than a blind `template[A-Z]` rule, which would
+    # corrupt Angular keywords (`templateUrl`, `templateRef`, ...).
+    # (Fable: added after the budgetus scaffold left these symbols un-renamed.)
     sed -i '' \
       -e "s/grid-template/@@GRIDTPL@@/g" \
+      -e "s/templateRoutes/${id}Routes/g" \
+      -e "s/templateSpaceRoutes/${id}SpaceRoutes/g" \
+      -e "s/templateDbo/${id}Dbo/g" \
       -e "s|template/|$id/|g" \
       -e "s/template-/$id-/g" \
       -e "s/templateApp/${id}App/g" \
