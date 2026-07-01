@@ -108,10 +108,12 @@ pnpm exec nx run-many -t lint test build
 
 ## Landing site (`landings/`)
 
-A static **Astro** marketing site that owns the public apex domain, deployed to
-Cloudflare separately from the app (the **site-hosting-pattern**: landing at `/`,
-app under `/app/`). The scaffold is apex-only by default with `example.com`
-placeholders.
+A static **Astro** marketing site that owns the public apex domain. The Angular
+app is mounted at the **root of the same origin**; a Cloudflare Worker
+(`landings/worker.js`) routes reserved public paths (`/`, `/{locale}/*`, static
+files) to the landing and everything else to the app. `pnpm build` produces the
+combined distribution. The scaffold is apex-only by default with `example.com`
+placeholders. See the routing model in [`docs/HOSTING.md`](docs/HOSTING.md).
 
 ```sh
 cd landings && pnpm install && pnpm dev

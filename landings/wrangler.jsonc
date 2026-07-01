@@ -4,8 +4,15 @@
   "name": "template",
   "compatibility_date": "2026-06-23",
   "workers_dev": true,
+  // Edge router: reserved public paths -> landing; everything else -> the
+  // root-mounted Angular SPA (index.app.html). run_worker_first makes the Worker
+  // authoritative for the split (see worker.js and docs/HOSTING.md).
+  "main": "worker.js",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "none"
   },
   // TODO(hosting): replace example.com with your real apex domain.
   //
