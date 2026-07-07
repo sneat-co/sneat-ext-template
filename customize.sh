@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 #
-# customize.sh — turn this template into a concrete Sneat extension app.
+# customize.sh — turn this template into a concrete Sneat extension product/app repo.
 #
 # Usage:
 #   ./customize.sh <extension-id>          # e.g. ./customize.sh gameboard
 #
 # Renames the placeholder `template` extension to <extension-id> across the
-# whole Nx workspace: the app (template-app -> <id>-app), the extension lib
-# triad (libs/extensions/template -> libs/extensions/<id>, ext-template-* ->
-# ext-<id>-*, @sneat/extension-template-* -> @sneat/extension-<id>-*), symbols
+# whole Nx workspace: the app (template-app -> <id>-app), the implementation repo
+# lib triad (libs/extensions/template -> libs/extensions/<id>, Nx project names,
+# @sneat/extension-template-* -> @sneat/extension-<id>-*), symbols
 # (provideTemplateInternal, TemplateHomePage, TEMPLATE_SERVICE, ...), the appId
 # and titles. It does NOT touch pnpm-lock.yaml — run `pnpm install` afterwards
 # so pnpm reconciles the renamed workspace packages.
+#
+# This script customizes the <id> product/app repo. If the extension needs a
+# public definition repo, create ext-<id> separately with typespec/, backend/,
+# and frontend/. The local contract lib is a starter surface that can graduate to
+# ext-<id>/frontend.
 #
 # The replacement is intentionally TARGETED (not a blind s/template/<id>/g) so
 # it never corrupts Angular keywords like `templateUrl`, inline `template:`, or
@@ -105,3 +110,7 @@ echo
 echo "Done. Next:"
 echo "  pnpm install            # reconcile renamed workspace packages"
 echo "  pnpm exec nx build ${id}-app"
+echo
+echo "Repo convention:"
+echo "  ${id}      # product/app/implementation repo customized here"
+echo "  ext-${id}  # public extension-definition repo (typespec/, backend/, frontend/) if needed"

@@ -1,12 +1,48 @@
 # sneat-ext-template
 
-A template for starting a new **Sneat frontend extension** — an Nx workspace
-with an Angular + Ionic app that mounts a Sneat extension (the
-`contract` / `internal` / `shared` library triad) on the standard Sneat app
-shell (auth, spaces, UI).
+A template for starting a new **Sneat product / implementation / app repo** for
+an extension — an Nx workspace with an Angular + Ionic app that mounts the
+extension on the standard Sneat app shell (auth, spaces, UI).
 
 It is the frontend counterpart to [`sneat-mod-template`](https://github.com/sneat-co/sneat-mod-template)
 (which scaffolds the Go module/backend).
+
+## Repo model
+
+Sneat extensions use the repository naming convention from
+[`sneat-specs/standards/repo-naming.md`](https://github.com/sneat-co/sneat-specs/blob/main/standards/repo-naming.md):
+
+- `<id>` — product / implementation / app repo. This is what this template
+  creates.
+- `ext-<id>` — public extension-definition repo containing the stable cross-repo
+  boundary.
+
+Repo names and package names are different on purpose:
+
+- repo: `ext-<id>`
+- published frontend contract package: `@sneat/extension-<id>-contract`
+
+For example:
+
+```text
+gameboard      # private product/app/implementation repo
+ext-gameboard  # public extension-definition repo
+```
+
+The public `ext-<id>` repo has the standard top-level layout:
+
+```text
+typespec/
+backend/
+frontend/
+```
+
+This template keeps a local `contract` library so the app can compile from day
+one. For extensions with cross-repo consumers, move or publish that public
+contract surface from `ext-<id>/frontend` as
+`@sneat/extension-<id>-contract`, and have the implementation repo import it
+like any other dependency. Keep deployable app code and implementation
+internals in `<id>`.
 
 ## Stack
 
@@ -23,7 +59,7 @@ apps/
   template-app/        # the Ionic app (composition root)
   template-app-e2e/    # Playwright e2e
 libs/extensions/template/
-  contract/            # @sneat/extension-template-contract  — tokens & DTOs
+  contract/            # starter public surface; graduates to ext-<id>/frontend
   internal/            # @sneat/extension-template-internal   — service impls + provideTemplateInternal()
   shared/              # @sneat/extension-template-shared     — pages/components
 landings/              # static Astro marketing site (the public apex) — see docs/HOSTING.md
@@ -83,8 +119,8 @@ when it is used on one route only *and* pulls in a heavy/cross-extension dep.**
 
 ## Create a new extension
 
-Clone this template into your target repo, then run the rename script with your
-extension id (a single lowercase token):
+Clone this template into your `<id>` product/app repo, then run the rename script
+with your extension id (a single lowercase token):
 
 ```sh
 ./customize.sh gameboard
@@ -96,6 +132,20 @@ pnpm exec nx build gameboard-app   # verify
 package names, symbols, selectors, `appId`/title) **without** corrupting Angular
 keywords like `templateUrl`, inline `template:`, or `<ng-template>`. It removes
 itself when done.
+
+If the extension needs a public definition repo, create `ext-<id>` separately
+with:
+
+```text
+typespec/
+backend/
+frontend/
+```
+
+The `libs/extensions/<id>/contract` starter library in this app repo should then
+either move to `ext-<id>/frontend` or become a thin compatibility wrapper around
+the package published from `ext-<id>/frontend`
+(`@sneat/extension-<id>-contract`).
 
 ### Adjust these placeholders after scaffolding
 
