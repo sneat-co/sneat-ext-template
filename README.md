@@ -97,6 +97,29 @@ package names, symbols, selectors, `appId`/title) **without** corrupting Angular
 keywords like `templateUrl`, inline `template:`, or `<ng-template>`. It removes
 itself when done.
 
+### Adjust these placeholders after scaffolding
+
+`customize.sh` cannot know your product's domain or per-property IDs, so set
+these by hand:
+
+- **Google Analytics (landing)** — replace the `G-XXXXXXXXXX` placeholder in
+  `GA_MEASUREMENT_ID` at the top of `landings/src/layouts/BaseLayout.astro` with
+  your domain's GA4 Measurement ID. Look it up (or add a new property) in
+  [`sneat-ops/data/ga-properties.json`](https://github.com/sneat-co/sneat-ops/blob/main/data/ga-properties.json),
+  keyed by domain. **Until you replace it, GA is inert** — the tag is not loaded
+  and nothing is recorded. Drop the `privacyHref` prop if your landing has no
+  `/privacy` page. See [Analytics](#analytics-ga4) below.
+- **Google Analytics (app)** — add `googleAnalytics: { measurementId: 'G-…' }`
+  to `apps/<id>-app/src/environments/environment.ts` (use the **same** ID as the
+  landing — the app reports to the same per-domain property, tagged
+  `surface=app`). This activates the gtag GA4 backend that the standard Sneat
+  providers already wire via `provideSneatAnalytics`. Requires the platform libs
+  at a version that carries the field (`@sneat/core >= 0.22.0`); bump first if
+  the app is pinned older.
+- **Domain** — replace the `example.com` placeholders in `landings/` (see
+  `docs/HOSTING.md`) and the app's title/`appId` (mostly handled by
+  `customize.sh`).
+
 ## Develop
 
 ```sh
@@ -123,6 +146,19 @@ cd landings && pnpm install && pnpm dev
 domains, the apex-only recommendation, how to add a `www → apex` redirect (a zone
 Redirect Rule, *not* a worker), and the exact Cloudflare token scopes each step
 needs. Reference implementations: `surpriseless` and `requoter`.
+
+### Analytics (GA4)
+
+The landing ships with `src/components/GoogleAnalytics.astro` — the ecosystem's
+standard GA4 tag with **Consent Mode v2**, geo-gated so the EU/EEA + UK see a
+consent banner (analytics denied until accepted) while everyone else is measured
+immediately; Google Signals and ad personalization are off (measure-only, never
+for ads). It is already imported into `BaseLayout.astro` and renders on every
+page **once you set a real ID** — see
+[Adjust these placeholders after scaffolding](#adjust-these-placeholders-after-scaffolding).
+The landing and its Angular app share one Measurement ID (one per-domain
+property), so the landing→app funnel stays intact and in-app hits are tagged
+`surface=app`.
 
 ## Notes
 

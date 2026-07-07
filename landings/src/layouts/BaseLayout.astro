@@ -3,6 +3,13 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import GoogleAnalytics from "../components/GoogleAnalytics.astro";
+
+// TODO(copy): set your landing's own GA4 Measurement ID. Look it up (or add a
+// new property) in sneat-ops/data/ga-properties.json, keyed by this landing's
+// domain. Until you replace the G-XXXXXXXXXX placeholder below, GA is inert —
+// it loads no tag and records nothing.
+const GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
 
 interface Props {
   title?: string;
@@ -56,6 +63,13 @@ const siteName = "Template";
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageUrl} />
+
+    {/* Google Analytics 4 — geo-gated (EU/UK Consent Mode v2). Inert until you
+        replace the placeholder in GA_MEASUREMENT_ID above. Drop `privacyHref`
+        if this landing has no /privacy page. */}
+    {GA_MEASUREMENT_ID !== "G-XXXXXXXXXX" && (
+      <GoogleAnalytics id={GA_MEASUREMENT_ID} privacyHref="/privacy/" />
+    )}
   </head>
   <body>
     <a class="visually-hidden" href="#main">Skip to content</a>
