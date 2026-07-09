@@ -1,54 +1,29 @@
 name: Deploy landings + app (Cloudflare)
 
-# Manual deploy of the single product origin to Cloudflare (Workers static assets
-# + a Worker that splits landing vs the root-mounted Angular app). `landings/pnpm
-# build` builds BOTH the Astro landing and the Angular app, then assembles them
-# into one dist/ (landings/scripts/assemble-app.mjs, landings/worker.js) — so this
-# job installs deps for BOTH the repo root (for the app build) and landings/.
-# Manual (workflow_dispatch) on purpose: it requires the CLOUDFLARE_* repository
-# secrets, so it must not run automatically until those are set. Once the secrets
-# exist, switch the trigger to `push: branches: [main]` (paths: [landings/**,
-# apps/**, libs/**]) for auto-deploy.
+# Deploys the template's product origin (Astro landing + root-mounted Angular app assembled into one dist/) to
+# Cloudflare (Workers static assets) via the shared reusable cf-deploy
+# workflow (sneat-co/cicd), so every Sneat site deploys the same way and every
+# deploy is visible/auditable in GitHub Actions.
 #
-# Standalone (not the shared cf-deploy.yml): that reusable workflow builds with a
-# single `nx build`, but landings is an Astro project whose `pnpm build`
-# orchestrates the app build + assembly.
+# Auth is org-level: CLOUDFLARE_API_TOKEN org secret + CLOUDFLARE_ACCOUNT_ID
+# org variable (an identifier, not a secret). No per-repo secrets needed.
 #
-# The worker name + custom-domain route(s) are declared in
-# landings/wrangler.jsonc. See docs/HOSTING.md for the full setup
-# (routing model, custom domains, apex-vs-www, token scopes).
-
+# Template repo: manual dispatch only. In a repo generated from this
+# template, switch to `push: {branches: [main], paths: [landings/**, apps/**, libs/**]}`.
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-landings-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm + Node (repo root — for the Angular app build)
-        uses: sneat-co/cicd/actions/setup-pnpm-node@main
-        with:
-          working-directory: .
-
-      - name: Setup pnpm + Node (landings)
-        uses: sneat-co/cicd/actions/setup-pnpm-node@main
-        with:
-          working-directory: landings
-
-      - name: Build combined distribution (landing + root-mounted app)
-        working-directory: landings
-        run: pnpm build
-
-      - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: landings
-          command: deploy --config wrangler.jsonc
+    uses: sneat-co/cicd/.github/workflows/cf-deploy.yml@main
+    with:
+      working-directory: landings
+      build-command: pnpm build
+      cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      extra-install-directory: "."
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
