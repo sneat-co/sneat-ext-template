@@ -1,3 +1,19 @@
+# Firebase's @angular/fire@20 drags in @angular/platform-browser-dynamic@20 ->
+# @angular/compiler@20, creating a SECOND @angular/core variant (keyed by a
+# different compiler peer). Two physical @angular/core copies make TypeScript
+# treat InjectionToken from one as incompatible with ProviderToken from the other
+# (TS2345), breaking `nx build`. Pin @angular/compiler to the SAME version the
+# app resolves for @angular/core ($-ref, so it tracks the framework automatically
+# and needs no maintenance on Angular bumps) — collapsing to one @angular/core.
+overrides:
+  '@angular/compiler': '$@angular/core'
+# Bound workspace-member discovery to the real source packages (root + libs).
+# Without this, pnpm globs every package.json — including dist/ build copies —
+# so `pnpm install` after a build fails with ERR_PNPM_OUTDATED_LOCKFILE.
+# landings/ is its own separate workspace and is intentionally excluded.
+packages:
+  - 'apps/*'
+  - 'libs/**'
 allowBuilds:
   '@firebase/util': true
   '@parcel/watcher': true
