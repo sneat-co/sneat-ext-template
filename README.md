@@ -192,10 +192,16 @@ placeholders. See the routing model in [`docs/HOSTING.md`](docs/HOSTING.md).
 cd landings && pnpm install && pnpm dev
 ```
 
-**Read [`docs/HOSTING.md`](docs/HOSTING.md) before deploying** — it covers custom
-domains, the apex-only recommendation, how to add a `www → apex` redirect (a zone
-Redirect Rule, *not* a worker), and the exact Cloudflare token scopes each step
-needs. Reference implementations: `surpriseless` and `requoter`.
+**Deploy = the GitHub Action, not your laptop.** Trigger the **"Deploy landings +
+app (Cloudflare)"** workflow (`gh workflow run "Deploy landings + app (Cloudflare)"
+-R sneat-co/<id> --ref main`); it uses **org-level** Cloudflare credentials via the
+shared `sneat-co/cicd` workflow, so no per-repo secrets or local `wrangler login`
+are needed. Local `wrangler deploy` is only a fallback.
+
+**Read [`docs/HOSTING.md`](docs/HOSTING.md) before deploying** — it covers the
+Action, custom domains, the apex-only recommendation, how to add a `www → apex`
+redirect (a zone Redirect Rule, *not* a worker), and the exact Cloudflare token
+scopes each step needs. Reference implementations: `surpriseless` and `requoter`.
 
 ### Analytics (GA4)
 

@@ -71,25 +71,38 @@ it — **the permission matters** (see [Token scopes](#token-scopes--permissions
   custom domain (it fails at the `.../domains/records` step). Either run the
   one-time attach in the dashboard, or use a DNS-scoped token.
 
-### 4. Deploy
+### 4. Deploy — via the GitHub Action (the normal way)
 
-Locally (once the custom domain exists):
+**Deploys run in CI, not from your laptop.** Trigger the **"Deploy landings +
+app (Cloudflare)"** Action (`.github/workflows/deploy-landings.yml`,
+`workflow_dispatch`). It calls the shared `sneat-co/cicd` reusable workflow with
+**org-level** Cloudflare credentials — `CLOUDFLARE_API_TOKEN` (org secret) and
+`CLOUDFLARE_ACCOUNT_ID` (org variable) — so **no per-repo secrets and no local
+`wrangler login` are needed**:
+
+```sh
+gh workflow run "Deploy landings + app (Cloudflare)" -R sneat-co/<id> --ref main
+gh run watch -R sneat-co/<id>
+```
+
+(or GitHub → Actions → *Deploy landings + app (Cloudflare)* → **Run workflow**.)
+Once you're happy, switch the workflow trigger to `push` on
+`landings/**`, `apps/**`, `libs/**`.
+
+The org token needs `Zone:DNS:Edit` in addition to `Workers Scripts:Edit` only
+if you want CI to (re)attach the custom domain; otherwise attach it once in the
+dashboard (step 3) and the token just needs Workers write.
+
+#### Local fallback
+
+Only if you have your own Cloudflare token and need an out-of-band deploy
+(once the custom domain exists):
 
 ```sh
 cd landings
 pnpm build
 npx wrangler deploy --config wrangler.jsonc
 ```
-
-Or via CI: the **Deploy landings (Cloudflare)** GitHub Action
-(`.github/workflows/deploy-landings.yml`, `workflow_dispatch`). It needs two
-repository secrets:
-
-- `CLOUDFLARE_API_TOKEN` — Workers Scripts:Edit (+ Zone:DNS:Edit if you want CI
-  to (re)attach custom domains)
-- `CLOUDFLARE_ACCOUNT_ID`
-
-Once the secrets exist you can switch the trigger to `push` on `landings/**`.
 
 ---
 
