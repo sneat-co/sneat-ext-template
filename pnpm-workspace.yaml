@@ -7,6 +7,24 @@
 # and needs no maintenance on Angular bumps) — collapsing to one @angular/core.
 overrides:
   '@angular/compiler': '$@angular/core'
+  # Dependabot CVE fixes forced onto transitive deps (firebase@12 / dev tooling).
+  # `>=` floors so pnpm resolves the highest compatible patched version rather
+  # than pinning. Prune an entry once the direct dep that pulls the vulnerable
+  # range is itself bumped past it. NOTE: esbuild + piscina are deliberately NOT
+  # overridden — they are pinned by @angular/build and forcing them regresses the
+  # Angular compiler build; they clear when Angular itself is bumped (blocked on a
+  # coordinated @angular/* + @ionic/angular upgrade — 21.2.17 breaks Ionic 8.8.6's
+  # proxy re-exports with NG3004).
+  '@babel/core': '>=7.29.6'
+  form-data: '>=4.0.6'
+  http-proxy-middleware: '>=3.0.7'
+  js-yaml: '>=4.2.0'
+  postcss: '>=8.5.10'
+  qs: '>=6.15.2'
+  tmp: '>=0.2.7'
+  undici: '>=7.28.0'
+  uuid: '>=11.1.1'
+  webpack-dev-server: '>=5.2.5'
 # Bound workspace-member discovery to the real source packages (root + libs).
 # Without this, pnpm globs every package.json — including dist/ build copies —
 # so `pnpm install` after a build fails with ERR_PNPM_OUTDATED_LOCKFILE.
