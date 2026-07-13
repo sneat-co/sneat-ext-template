@@ -24,7 +24,7 @@
     "@sneat/space-models": "^0.9.0",
     "@sneat/space-services": "^0.9.0",
     "@sneat/ui": "^0.9.0",
-    "@sneat/extension-template-contract": "^0.0.1",
+    "@sneat/extension-template-contract": "workspace:*",
     "vitest": "^4.0.9"
   },
   "sideEffects": false
