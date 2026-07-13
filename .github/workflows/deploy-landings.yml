@@ -8,10 +8,19 @@ name: Deploy landings + app (Cloudflare)
 # Auth is org-level: CLOUDFLARE_API_TOKEN org secret + CLOUDFLARE_ACCOUNT_ID
 # org variable (an identifier, not a secret). No per-repo secrets needed.
 #
-# Template repo: manual dispatch only. In a repo generated from this
-# template, switch to `push: {branches: [main], paths: [landings/**, apps/**, libs/**]}`.
+# Deploys on push to main when the app, landing or extension libs change, plus
+# manual dispatch for on-demand redeploys. The template previews on workers.dev
+# (wrangler.jsonc keeps the apex custom_domain commented out); generated repos
+# inherit this trigger and uncomment their apex when ready.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - landings/**
+      - apps/**
+      - libs/**
+      - .github/workflows/deploy-landings.yml
 
 concurrency:
   group: deploy-landings-${{ github.ref }}
