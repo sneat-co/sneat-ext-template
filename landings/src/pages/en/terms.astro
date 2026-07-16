@@ -1,14 +1,14 @@
 ---
 /**
- * Privacy, English. Structure: ../../components/Legal.astro.
- * Words: ../../i18n/copy/en.ts (privacyPage) — including the CLAIMS DISCIPLINE
+ * Terms, English. Structure: ../../components/Legal.astro.
+ * Words: ../../i18n/copy/en.ts (termsPage) — including the CLAIMS DISCIPLINE
  * rules, which apply to every language.
  */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Legal from "../../components/Legal.astro";
 import { getCopy } from "../../i18n/copy";
 
-const c = getCopy("en").privacyPage;
+const c = getCopy("en").termsPage;
 ---
 
 <BaseLayout locale="en" title={c.seoTitle} description={c.seoDescription}>

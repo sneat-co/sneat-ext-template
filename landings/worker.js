@@ -13,7 +13,12 @@
 // Locale codes whose /{locale}/* subtree is landing content. Explicit list, NOT
 // "any two-letter segment": /my (the personal dashboard) is also two letters and
 // must stay an application route. Add locales as the landing publishes them.
-const RESERVED_LOCALES = ['en'];
+//
+// KEEP IN SYNC with `langs` in src/i18n/languages.ts. A locale that ships there
+// but is missing here does NOT 404 — it falls through to the SPA and answers 200
+// with the app shell, so the landing looks "deployed" while being unreachable.
+// That is the single easiest way to break this landing, and it hides well.
+const RESERVED_LOCALES = ['en', 'ru'];
 
 function isReservedPublicPath(pathname) {
   let p = pathname || '/';
@@ -38,6 +43,27 @@ export default {
     // Remove once no old /pwa/* links remain.
     if (p === '/pwa' || p.startsWith('/pwa/')) {
       url.pathname = p.slice('/pwa'.length) || '/';
+      return Response.redirect(url.toString(), 301);
+    }
+
+    // English is the default locale and its home is the bare root, so `/en/` is
+    // a duplicate front door rather than a page: 301 it to `/`. Only the locale
+    // INDEX folds away — `/en/privacy` stays the canonical English URL and keeps
+    // its prefix, because that prefix is what separates landing space from the
+    // root-mounted app.
+    if (p === '/en' || p === '/en/') {
+      url.pathname = '/';
+      return Response.redirect(url.toString(), 301);
+    }
+
+    // Unprefixed legal pages are what people type and what other sites link to.
+    // Without this they'd miss every asset and fall through to the app shell —
+    // answering 200 with an Angular bundle where a human expected a policy.
+    // Send them to the default locale's copy.
+    const LEGAL = ['/privacy', '/terms'];
+    const bare = p.length > 1 ? p.replace(/\/+$/, '') : p;
+    if (LEGAL.includes(bare)) {
+      url.pathname = `/en${bare}`;
       return Response.redirect(url.toString(), 301);
     }
 
