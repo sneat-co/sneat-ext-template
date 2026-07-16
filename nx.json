@@ -93,11 +93,9 @@
   },
   "release": {
     "projects": [
-      "ext-template-contract",
-      "ext-template-internal",
-      "ext-template-shared"
+      "ext-template-runtime"
     ],
-    "projectsRelationship": "independent",
+    "projectsRelationship": "fixed",
     "docker": {
       "skipVersionActions": true
     },

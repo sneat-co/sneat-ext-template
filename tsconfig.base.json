@@ -15,14 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@sneat/extension-template-contract": [
-        "./libs/extensions/template/contract/src/index.ts"
-      ],
-      "@sneat/extension-template-shared": [
-        "./libs/extensions/template/shared/src/index.ts"
-      ],
-      "@sneat/extension-template-internal": [
-        "./libs/extensions/template/internal/src/index.ts"
+      "@sneat/extension-template": [
+        "./libs/extensions/template/runtime/src/index.ts"
       ]
     }
   },

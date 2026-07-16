@@ -22,53 +22,48 @@ export default [
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
             {
-              sourceTag: 'scope:template',
-              onlyDependOnLibsWithTags: ['scope:template'],
-            },
-            {
-              sourceTag: 'type:contract',
-              onlyDependOnLibsWithTags: ['type:contract', 'scope:foundation'],
-            },
-            {
-              // per-extension scope (scope:template) is deliberately NOT allowed:
-              // -internal carries it, so allowing it would defeat the load-bearing
-              // `type:shared MUST NOT depend on type:internal` rule. Shared reaches
-              // its own contract via type:contract.
-              sourceTag: 'type:shared',
+              sourceTag: 'layer:runtime',
               onlyDependOnLibsWithTags: [
-                'type:contract',
-                'type:shared',
+                'layer:contract',
+                'layer:ui',
                 'scope:foundation',
               ],
             },
             {
-              sourceTag: 'type:internal',
+              sourceTag: 'layer:app',
               onlyDependOnLibsWithTags: [
-                'type:contract',
-                'type:shared',
-                'type:internal',
-                'scope:foundation',
-                'scope:template',
+                'layer:contract',
+                'layer:ui',
+                'layer:runtime',
               ],
             },
             {
-              // The app is the composition root: it may consume every tier,
-              // including type:internal (to wire provider factories at bootstrap).
-              sourceTag: 'type:app',
-              onlyDependOnLibsWithTags: [
-                'type:lib',
-                'type:contract',
-                'type:shared',
-                'type:internal',
-              ],
+              sourceTag: 'layer:e2e',
+              onlyDependOnLibsWithTags: ['layer:app'],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['libs/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^@sneat/extension-[a-z0-9-]+-internal(?:/|$)',
+              message: 'Extension libraries must use contract tokens, never another extension runtime.',
             },
             {
-              sourceTag: 'type:e2e',
-              onlyDependOnLibsWithTags: ['type:app', 'type:lib'],
+              regex: '^@sneat/extension-(?!.*-(?:contract|ui|shared)$)[a-z0-9-]+$',
+              message: 'Unsuffixed extension runtime packages are app-composition APIs.',
             },
             {
-              sourceTag: 'type:lib',
-              onlyDependOnLibsWithTags: ['type:lib', 'type:contract'],
+              regex: '^@sneat/(?:contactus|calendarius)-(?:core|services|internal)(?:/|$)',
+              message: 'Import the extension contract or UI package instead.',
             },
           ],
         },
