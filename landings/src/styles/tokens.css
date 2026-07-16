@@ -30,7 +30,14 @@
   --brand-soon-ink: #5b6480;
 
   /* Type & shape */
-  --brand-font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Montserrat ships latin + cyrillic, so one brand font covers both locales
+     this landing publishes. It replaced Poppins, which has no Cyrillic at all
+     (latin / latin-ext / devanagari only) and left every Russian page rendering
+     in a system fallback while English got the brand font.
+     Check the subsets at fonts.google.com before swapping this — the failure is
+     silent, and visible only in the language you don't read. The @font-face
+     comes from the <link> in layouts/BaseLayout.astro. */
+  --brand-font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --brand-radius: 16px;
   --brand-radius-pill: 999px;
   --brand-shadow: 0 10px 26px rgba(20, 24, 58, 0.12);

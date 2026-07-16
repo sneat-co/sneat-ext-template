@@ -1,0 +1,71 @@
+---
+/**
+ * A legal page body — privacy and terms both render through this.
+ *
+ * Structure only; words come from i18n/copy/<locale>.ts (privacyPage /
+ * termsPage, both LegalPageCopy). One component rather than two because the
+ * two pages differ only in their words: forking it means a styling fix has to
+ * land twice, and it will land once.
+ *
+ * CLAIMS DISCIPLINE — see LegalPageCopy in i18n/copy/types.ts. Everything here
+ * must be true and checkable in every language you ship.
+ */
+import { localeHref, type LangCode } from "../i18n/languages";
+import type { LegalPageCopy } from "../i18n/copy/types";
+
+interface Props {
+  locale: LangCode;
+  copy: LegalPageCopy;
+}
+const { locale, copy: c } = Astro.props;
+---
+
+<section class="section">
+  <div class="container prose">
+    <p class="eyebrow">{c.eyebrow}</p>
+    <h1>{c.title}</h1>
+    <p>{c.lede}</p>
+    {c.updated && <p class="updated">{c.updated}</p>}
+
+    {
+      c.sections.map((s) => (
+        <>
+          <h2>{s.title}</h2>
+          <p>{s.body}</p>
+        </>
+      ))
+    }
+
+    <h2>{c.early.title}</h2>
+    <p>
+      {c.early.body}{" "}
+      <a href="https://sneat.co" target="_blank" rel="noopener">
+        {c.early.linkLabel}
+      </a>.
+    </p>
+
+    <p class="back"><a href={localeHref(locale, "/")}>{c.back}</a></p>
+  </div>
+</section>
+
+<style>
+  .prose {
+    max-width: 720px;
+  }
+  .prose h1 {
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    margin-bottom: var(--space-3);
+  }
+  .prose h2 {
+    font-size: 1.25rem;
+    margin-top: var(--space-4);
+  }
+  .updated {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .back {
+    margin-top: var(--space-4);
+    font-weight: 600;
+  }
+</style>

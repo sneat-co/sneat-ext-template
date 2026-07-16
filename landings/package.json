@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build && pnpm run build:app && node scripts/assemble-app.mjs",
-    "build:landing": "astro build",
+    "build": "astro check && astro build && pnpm run build:app && node scripts/assemble-app.mjs",
+    "build:landing": "astro check && astro build",
     "build:app": "cd .. && npx nx build template-app --base-href=/",
+    "check": "astro check",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -17,6 +18,8 @@
     "astro": "^7.0.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^5.9.3",
     "wrangler": "4.103.0"
   }
 }
