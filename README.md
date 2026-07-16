@@ -1,233 +1,59 @@
 # sneat-ext-template
 
-A template for starting a new **Sneat product / implementation / app repo** for
-an extension — an Nx workspace with an Angular + Ionic app that mounts the
-extension on the standard Sneat app shell (auth, spaces, UI).
+Starter implementation repository for a Sneat extension. It contains an Nx
+workspace, Angular/Ionic app, and one host-facing runtime package.
 
-It is the frontend counterpart to [`sneat-mod-template`](https://github.com/sneat-co/sneat-mod-template)
-(which scaffolds the Go module/backend).
+## Repository model
 
-## Repo model
+- `<id>` owns the implementation app and `@sneat/extension-<id>` runtime.
+- `ext-<id>` owns the public `@sneat/extension-<id>-contract` package.
 
-Sneat extensions use the repository naming convention from
-[`sneat-specs/standards/repo-naming.md`](https://github.com/sneat-co/sneat-specs/blob/main/standards/repo-naming.md):
-
-- `<id>` — product / implementation / app repo. This is what this template
-  creates.
-- `ext-<id>` — public extension-definition repo containing the stable cross-repo
-  boundary.
-
-Repo names and package names are different on purpose:
-
-- repo: `ext-<id>`
-- published frontend contract package: `@sneat/extension-<id>-contract`
-
-For example:
-
-```text
-gameboard      # private product/app/implementation repo
-ext-gameboard  # public extension-definition repo
-```
-
-The public `ext-<id>` repo has the standard top-level layout:
-
-```text
-typespec/
-backend/
-frontend/
-```
-
-This template keeps a local `contract` library so the app can compile from day
-one. For extensions with cross-repo consumers, move or publish that public
-contract surface from `ext-<id>/frontend` as
-`@sneat/extension-<id>-contract`, and have the implementation repo import it
-like any other dependency. Keep deployable app code and implementation
-internals in `<id>`.
-
-## Stack
-
-- **Nx** workspace (`@nx/angular` 22)
-- **Angular 21** + **Ionic 8**
-- **Firebase** auth via the shared Sneat platform packages (`@sneat/app`,
-  `@sneat/auth-ui`, …)
-- **Vitest** unit tests, **Playwright** e2e
+The implementation never copies contract source. It consumes the published
+contract package just as another extension would.
 
 ## Layout
 
-```
+```text
 apps/
-  template-app/        # the Ionic app (composition root)
-  template-app-e2e/    # Playwright e2e
+  template-app/        # Ionic composition root
+  template-app-e2e/    # Playwright harness
 libs/extensions/template/
-  contract/            # starter public surface; graduates to ext-<id>/frontend
-  internal/            # @sneat/extension-template-internal   — service impls + provideTemplateInternal()
-  shared/              # @sneat/extension-template-shared     — pages/components
-landings/              # static Astro marketing site (the public apex) — see docs/HOSTING.md
+  runtime/             # @sneat/extension-template
 ```
 
-## Wiring extension services (DI)
+The corresponding [`sneat-ext-contract-template`](../sneat-ext-contract-template)
+repository owns
+`@sneat/extension-template-contract`.
 
-Consumers depend only on **`contract`** tokens; the **`internal`** lib binds those
-tokens to implementations. There are two places to bind, and the choice matters
-for startup cost. Full rationale in the
-[frontend-apps standard](https://github.com/sneat-co/sneat-libs/blob/main/docs/extension-standards/frontend-apps.md).
+## Runtime API
 
-**1. Root register function — `provideTemplateInternal()` (default).** One function
-binds **every** always-on contract token; the app calls it once at bootstrap
-(`apps/template-app/src/main.ts`). Single wiring call, single audit site, no
-unbound-token crashes.
+The runtime package is deliberately an application-integration surface. Its
+root entry point exports provider functions and route arrays only. It does not
+export concrete services, pages, or components for other extension libraries to
+consume.
 
 ```ts
-// libs/extensions/template/internal/src/lib/provide-template-internal.ts
-export function provideTemplateInternal(): Provider[] {
-  return [ListService, { provide: TEMPLATE_SERVICE, useExisting: ListService }];
-}
+import { provideTemplate, templateSpaceRoutes } from '@sneat/extension-template';
+
+bootstrapApplication(App, {
+  providers: [...provideTemplate(), provideRouter(templateSpaceRoutes)],
+});
 ```
 
-**2. Lazy, route-scoped providers (for heavy, route-only capabilities).** When a
-capability is reached on **one route** and drags in a **heavy or cross-extension
-dependency** (e.g. a sibling extension's service that is *not* `providedIn:'root'`),
-do **not** bind it at root — a user who never opens that route would pay for it.
-Ship a route bundle whose `providers` create a child injector, so those services
-load **only when the route activates**. `internal` may import `shared`, so the
-route can lazy-load the shared page while the page still injects only the token:
-
-```ts
-// libs/extensions/template/internal/src/lib/provide-template-<feature>.ts
-export function provideTemplate<Feature>(): Provider[] {
-  return [
-    HeavyDep,                                       // not providedIn:'root'
-    <Feature>Service,
-    { provide: <FEATURE>_SERVICE, useExisting: <Feature>Service },
-  ];
-}
-
-export const template<Feature>Routes: Route[] = [
-  {
-    path: '<feature>/:id',
-    providers: [...provideTemplate<Feature>()],     // route-scoped, lazy
-    loadComponent: () =>
-      import('@sneat/extension-template-shared').then((m) => m.<Feature>PageComponent),
-  },
-];
-```
-
-The host mounts `...template<Feature>Routes` under its space shell; the same export
-serves both `template-app` and the main Sneat app. Rule of thumb: **bind in
-`provideTemplateInternal()` by default; move a binding to a route-scoped bundle
-when it is used on one route only *and* pulls in a heavy/cross-extension dep.**
+Extension libraries use contract tokens; only the app composition root imports a
+different extension's runtime package. Reusable components deserve a separate
+`@sneat/extension-<id>-ui` package only when another extension needs them.
 
 ## Create a new extension
 
-Clone this template into your `<id>` product/app repo, then run the rename script
-with your extension id (a single lowercase token):
-
-```sh
-./customize.sh gameboard
-pnpm install                       # reconcile the renamed workspace packages
-pnpm exec nx build gameboard-app   # verify
-```
-
-`customize.sh` renames `template → <id>` across the workspace (app, libs,
-package names, symbols, selectors, `appId`/title) **without** corrupting Angular
-keywords like `templateUrl`, inline `template:`, or `<ng-template>`. It removes
-itself when done.
-
-If the extension needs a public definition repo, create `ext-<id>` separately
-with:
-
-```text
-typespec/
-backend/
-frontend/
-```
-
-The `libs/extensions/<id>/contract` starter library in this app repo should then
-either move to `ext-<id>/frontend` or become a thin compatibility wrapper around
-the package published from `ext-<id>/frontend`
-(`@sneat/extension-<id>-contract`).
-
-### Adjust these placeholders after scaffolding
-
-`customize.sh` cannot know your product's domain or per-property IDs, so set
-these by hand:
-
-- **Google Analytics (landing)** — replace the `G-XXXXXXXXXX` placeholder in
-  `GA_MEASUREMENT_ID` at the top of `landings/src/layouts/BaseLayout.astro` with
-  your domain's GA4 Measurement ID. Look it up (or add a new property) in
-  [`sneat-ops/data/ga-properties.json`](https://github.com/sneat-co/sneat-ops/blob/main/data/ga-properties.json),
-  keyed by domain. **Until you replace it, GA is inert** — the tag is not loaded
-  and nothing is recorded. Drop the `privacyHref` prop if your landing has no
-  `/privacy` page. See [Analytics](#analytics-ga4) below.
-- **Google Analytics (app)** — add `googleAnalytics: { measurementId: 'G-…' }`
-  to `apps/<id>-app/src/environments/environment.ts` (use the **same** ID as the
-  landing — the app reports to the same per-domain property, tagged
-  `surface=app`). This activates the gtag GA4 backend that the standard Sneat
-  providers already wire via `provideSneatAnalytics`. Requires the platform libs
-  at a version that carries the field (`@sneat/core >= 0.22.0`); bump first if
-  the app is pinned older.
-- **Domain** — replace the `example.com` placeholders in `landings/` (see
-  `docs/HOSTING.md`) and the app's title/`appId` (mostly handled by
-  `customize.sh`).
-
-## Develop
+Clone this repository as `<id>`, rename `template` with `./customize.sh <id>`,
+and create a paired `ext-<id>` repository from `sneat-ext-contract-template`. Publish the
+contract first, update the implementation's dependency range, then build:
 
 ```sh
 pnpm install
-pnpm exec nx serve template-app          # dev server
-pnpm exec nx build template-app          # production build -> dist/apps/template-app/browser
 pnpm exec nx run-many -t lint test build
 ```
 
-## Landing site (`landings/`)
-
-A static **Astro** marketing site that owns the public apex domain. The Angular
-app is mounted at the **root of the same origin**; a Cloudflare Worker
-(`landings/worker.js`) routes reserved public paths (`/`, `/{locale}/*`, static
-files) to the landing and everything else to the app. `pnpm build` produces the
-combined distribution. The scaffold is apex-only by default with `example.com`
-placeholders. See the routing model in [`docs/HOSTING.md`](docs/HOSTING.md).
-
-```sh
-cd landings && pnpm install && pnpm dev
-```
-
-**Deploy = the GitHub Action, not your laptop.** Trigger the **"Deploy landings +
-app (Cloudflare)"** workflow (`gh workflow run "Deploy landings + app (Cloudflare)"
--R sneat-co/<id> --ref main`); it uses **org-level** Cloudflare credentials via the
-shared `sneat-co/cicd` workflow, so no per-repo secrets or local `wrangler login`
-are needed. Local `wrangler deploy` is only a fallback.
-
-**Read [`docs/HOSTING.md`](docs/HOSTING.md) before deploying** — it covers the
-Action, custom domains, the apex-only recommendation, how to add a `www → apex`
-redirect (a zone Redirect Rule, *not* a worker), and the exact Cloudflare token
-scopes each step needs. Reference implementations: `surpriseless` and `requoter`.
-
-### Analytics (GA4)
-
-The landing ships with `src/components/GoogleAnalytics.astro` — the ecosystem's
-standard GA4 tag with **Consent Mode v2**, geo-gated so the EU/EEA + UK see a
-consent banner (analytics denied until accepted) while everyone else is measured
-immediately; Google Signals and ad personalization are off (measure-only, never
-for ads). It is already imported into `BaseLayout.astro` and renders on every
-page **once you set a real ID** — see
-[Adjust these placeholders after scaffolding](#adjust-these-placeholders-after-scaffolding).
-The landing and its Angular app share one Measurement ID (one per-domain
-property), so the landing→app funnel stays intact and in-app hits are tagged
-`surface=app`.
-
-## Notes
-
-- The app's `appId` is cast `as SneatApp` because the placeholder id isn't in
-  `@sneat/core`'s `SneatApp` union. Once your id is registered (or `SneatApp`
-  accepts any string), the cast can be dropped.
-- Dependency updates are managed by Renovate via `.github/renovate.json`
-  (`extends: github>sneat-co/sneat-renovate-nx`).
-
-## Standards
-
-This is a **Sneat extension** — build it against the shared platform standards:
-
-- **[Sneat extension standards](https://github.com/sneat-co/sneat-libs/blob/main/docs/extension-standards/README.md)** — backend wiring, frontend apps, and UX conventions.
-- **[Frontend UX standards](https://github.com/sneat-co/sneat-specs/blob/main/standards/frontend-ux/README.md)** — cards, buttons, lists, page layout, forms, modals, and loading/empty/error states.
-- **[Screen flows & the UI component checklist](https://github.com/sneat-co/sneat-specs/blob/main/standards/frontend-ux/flows.md)** — read **before** building any form, page, or wizard: it covers how screens connect (entry → action → exit) so they don't end up orphaned.
+See the [extension standards](https://github.com/sneat-co/sneat-libs/tree/main/docs/extension-standards)
+for dependency rules and release sequencing.

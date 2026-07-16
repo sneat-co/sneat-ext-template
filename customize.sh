@@ -9,7 +9,7 @@
 # whole Nx workspace: the app (template-app -> <id>-app), the implementation repo
 # lib triad (libs/extensions/template -> libs/extensions/<id>, Nx project names,
 # @sneat/extension-template-* -> @sneat/extension-<id>-*), symbols
-# (provideTemplateInternal, TemplateHomePage, TEMPLATE_SERVICE, ...), the appId
+# (provideTemplate, TemplateHomePage, TEMPLATE_SERVICE, ...), the appId
 # and titles. It does NOT touch pnpm-lock.yaml — run `pnpm install` afterwards
 # so pnpm reconciles the renamed workspace packages.
 #

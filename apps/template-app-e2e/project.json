@@ -9,7 +9,7 @@
   "// targets": "to see all targets run: nx show project template-app-e2e --web",
   "targets": {},
   "tags": [
-    "type:e2e",
-    "scope:template"
+    "domain:template",
+    "layer:e2e"
   ]
 }

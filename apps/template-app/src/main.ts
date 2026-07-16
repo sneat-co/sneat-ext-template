@@ -8,7 +8,8 @@ import {
 } from '@sneat/app';
 import type { SneatApp } from '@sneat/core';
 import { authRoutes } from '@sneat/auth-ui';
-import { provideTemplateInternal } from '@sneat/extension-template-internal';
+import { provideContactus } from '@sneat/extension-contactus';
+import { provideTemplate } from '@sneat/extension-template';
 import { App } from './app/app';
 import { appRoutes } from './app/app.routes';
 import { templateAppEnvironmentConfig } from './environments/environment';
@@ -18,8 +19,9 @@ bootstrapApplication(App, {
   providers: [
     ...getStandardSneatProviders(templateAppEnvironmentConfig),
     // Bind the template contract token (TEMPLATE_SERVICE) to its concrete
-    // implementation. The app is the composition root and may wire -internal.
-    ...provideTemplateInternal(),
+    // implementation. The app is the composition root and may wire the runtime.
+    ...provideContactus(),
+    ...provideTemplate(),
     // `as SneatApp`: the template's placeholder appId isn't in @sneat/core's
     // SneatApp union yet. Remove the cast once @sneat/core allows any string
     // (or once the renamed app's id is registered).

@@ -75,8 +75,14 @@ export const langs: Lang[] = [
   { code: 'ru', label: 'Русский', short: 'RU', tag: 'ru', ogLocale: 'ru_RU' },
 ];
 
-export const langByCode = (code: LangCode): Lang =>
-  langs.find((l) => l.code === code)!;
+export const langByCode = (code: LangCode): Lang => {
+  const lang = langs.find((l) => l.code === code);
+  // Unreachable via LangCode, but reachable from a hand-written string — and a
+  // throw names the locale, where a non-null assertion would hand the caller an
+  // undefined that surfaces three frames later as "cannot read property tag".
+  if (!lang) throw new Error(`Unknown locale: ${code}`);
+  return lang;
+};
 
 /** Matches a leading locale segment, and only a whole segment. */
 const LOCALE_PREFIX = new RegExp(
@@ -116,7 +122,7 @@ export function routeFromPath(path: string): string {
  * is exactly what separates landing space from application space — an
  * unprefixed `/privacy` would collide with the app's route namespace.
  */
-export function localeHref(code: LangCode, route: string = '/'): string {
+export function localeHref(code: LangCode, route = '/'): string {
   const r = route.startsWith('/') ? route : `/${route}`;
   if (code === DEFAULT_LOCALE && r === '/') return '/';
   return `/${code}${r === '/' ? '/' : r}`;

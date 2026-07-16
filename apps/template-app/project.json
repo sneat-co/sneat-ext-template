@@ -5,8 +5,8 @@
   "prefix": "template",
   "sourceRoot": "apps/template-app/src",
   "tags": [
-    "type:app",
-    "scope:template"
+    "domain:template",
+    "layer:app"
   ],
   "targets": {
     "build": {
