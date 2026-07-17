@@ -72,7 +72,7 @@ find . -type f -name '*template*' \
   done
 
 # --- 3. Targeted content replacement across text files (NOT the lockfile) ---
-grep -rIl -E "template[-/]|templateApp|template[A-Z]|'template'|\"template\"|scope:template|Template|TEMPLATE" . \
+grep -rIl -E "template[-/.]|templateApp|template[A-Z]|'template'|\"template\"|scope:template|extension-template|provide-template|domain:template|Template|TEMPLATE" . \
   --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist \
   --exclude-dir=.nx --exclude-dir=.angular \
   --exclude-dir='legacy-*' --exclude-dir=backend --exclude=pnpm-lock.yaml |
@@ -86,8 +86,21 @@ grep -rIl -E "template[-/]|templateApp|template[A-Z]|'template'|\"template\"|sco
     # them EXPLICITLY rather than a blind `template[A-Z]` rule, which would
     # corrupt Angular keywords (`templateUrl`, `templateRef`, ...).
     # (Fable: added after the budgetus scaffold left these symbols un-renamed.)
+    #
+    # Rules ordered specific-first so broader patterns don't interfere:
+    #   @sneat/extension-template (bare, no trailing dash) — must come BEFORE
+    #   template- so that @sneat/extension-template-contract is first rewritten
+    #   to @sneat/extension-<id>-contract by this rule, not left for template-.
+    #   provide-template — import string in index.ts and spec; file gets renamed
+    #   by pass 2 but the string inside the file also needs updating.
+    #   domain:template — Nx tag in project.json files.
+    #   template.app — comment references in main.ts, environment.ts, etc.
     sed -i '' \
       -e "s/grid-template/@@GRIDTPL@@/g" \
+      -e "s|@sneat/extension-template|@sneat/extension-${id}|g" \
+      -e "s/provide-template/provide-${id}/g" \
+      -e "s/domain:template/domain:${id}/g" \
+      -e "s/template\.app/${id}.app/g" \
       -e "s/templateRoutes/${id}Routes/g" \
       -e "s/templateSpaceRoutes/${id}SpaceRoutes/g" \
       -e "s/templateDbo/${id}Dbo/g" \
