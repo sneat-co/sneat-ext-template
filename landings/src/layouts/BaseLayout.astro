@@ -1,129 +1,68 @@
 ---
-import "../styles/tokens.css";
-import "../styles/global.css";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import GoogleAnalytics from "../components/GoogleAnalytics.astro";
-import {
-  langs,
-  langByCode,
-  localeHref,
-  routeFromPath,
-  DEFAULT_LOCALE,
-  type LangCode,
-} from "../i18n/languages";
-import { getCopy } from "../i18n/copy";
+/**
+ * Thin wrapper over @sneat/astro's BaseLayout: it wires this landing's fonts,
+ * tokens and (optional) consent-banner analytics, and injects the site identity
+ * + per-locale chrome. The shared layout renders <head> (SeoHead: canonical,
+ * hreflang cluster, OG/Twitter, JSON-LD), the Header, your page, and the Footer.
+ *
+ * Pages keep importing THIS file, so they don't change when the shared package
+ * updates. Fonts and analytics stay here (a shared layout can't know your faces,
+ * and a face without your locales' scripts is a silent, locale-specific bug).
+ */
+import '../styles/tokens.css';
+import '../styles/global.css';
+import SharedLayout from '@sneat/astro/layouts/BaseLayout.astro';
+import GoogleAnalytics from '../components/GoogleAnalytics.astro';
+import { i18n, localeHref, type LangCode } from '../i18n/languages';
+import { siteMeta, getChrome } from '../i18n/site';
+import { getCopy } from '../i18n/copy';
 
-// TODO(copy): set your landing's own GA4 Measurement ID. Look it up (or add a
-// new property) in sneat-ops/data/ga-properties.json, keyed by this landing's
-// domain. Until you replace the G-XXXXXXXXXX placeholder below, GA is inert —
-// it loads no tag and records nothing.
-const GA_MEASUREMENT_ID = "G-XXXXXXXXXX";
+// TODO(copy): set your GA4 Measurement ID. Look it up (or add a property) in
+// sneat-ops/data/ga-properties.json, keyed by this landing's domain. Inert until
+// you replace the placeholder — no tag loads and nothing is recorded.
+const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';
 
 interface Props {
   /** Required: every page declares the language it is written in. */
   locale: LangCode;
   title?: string;
   description?: string;
-  /** Path-relative OG image, e.g. "/og.png" */
+  /** Path-relative OG image, e.g. "/og.png". */
   image?: string;
+  /** Float the header over a photographic hero. */
+  transparentNav?: boolean;
 }
 
-const { locale, image = "/og.png" } = Astro.props;
+const { locale, image = '/og.png', transparentNav = false } = Astro.props;
 const copy = getCopy(locale);
-const lang = langByCode(locale);
-
-// Default to the locale's own home-page SEO strings, so a page that passes
-// neither still gets metadata in the right language.
-const { title = copy.site.seoTitle, description = copy.site.seoDescription } =
-  Astro.props;
-
-const canonical = new URL(Astro.url.pathname, Astro.site);
-const imageUrl = new URL(image, Astro.site);
-
-// The locale-independent route, so each hreflang alternate points at THIS page
-// in that language rather than at its home.
-const route = routeFromPath(Astro.url.pathname);
+const { title = copy.site.seoTitle, description = copy.site.seoDescription } = Astro.props;
 ---
 
-<!doctype html>
-<html lang={lang.tag}>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={canonical} />
-
-    {/* Every page in an hreflang cluster must list the whole cluster, itself
-        included, plus an x-default pointing at the default locale. */}
-    {
-      langs.map((l) => (
-        <link
-          rel="alternate"
-          hreflang={l.tag}
-          href={new URL(localeHref(l.code, route), Astro.site)}
-        />
-      ))
-    }
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={new URL(localeHref(DEFAULT_LOCALE, route), Astro.site)}
-    />
-
+<SharedLayout
+  i18n={i18n}
+  site={siteMeta}
+  chrome={getChrome(locale)}
+  locale={locale}
+  title={title}
+  description={description}
+  ogImage={image}
+  transparentNav={transparentNav}
+  langLabel={copy.langLabel}
+>
+  <Fragment slot="head">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    {/* Montserrat, not Poppins: Poppins ships latin/latin-ext/devanagari and no
-        Cyrillic at all, so every Russian page rendered in a system fallback
-        while English got the brand font. Montserrat is the nearest geometric
-        sans that ships Cyrillic. Check the subsets before swapping this out —
-        the failure is silent and only visible in the locale you don't read. */}
+    {/* Montserrat ships Latin + Cyrillic; check subsets before swapping (a face
+        without a script you ship fails silently in that locale only). */}
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
-
-    <title>{title}</title>
-    <meta name="description" content={description} />
-
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={copy.site.brand} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={imageUrl} />
-    <meta property="og:locale" content={lang.ogLocale} />
     {
-      langs
-        .filter((l) => l.code !== locale)
-        .map((l) => <meta property="og:locale:alternate" content={l.ogLocale} />)
-    }
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={imageUrl} />
-
-    {/* Google Analytics 4 — geo-gated (EU/UK Consent Mode v2). Inert until you
-        replace the placeholder in GA_MEASUREMENT_ID above. */}
-    {
-      GA_MEASUREMENT_ID !== "G-XXXXXXXXXX" && (
-        <GoogleAnalytics
-          id={GA_MEASUREMENT_ID}
-          privacyHref={localeHref(locale, "/privacy")}
-        />
+      GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX' && (
+        <GoogleAnalytics id={GA_MEASUREMENT_ID} privacyHref={localeHref(locale, '/privacy')} />
       )
     }
-  </head>
-  <body>
-    <a class="visually-hidden" href="#main">{copy.a11y.skipToContent}</a>
-    <Header locale={locale} />
-    <main id="main">
-      <slot />
-    </main>
-    <Footer locale={locale} />
-  </body>
-</html>
+  </Fragment>
+  <slot />
+</SharedLayout>
