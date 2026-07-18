@@ -31,7 +31,11 @@ jobs:
     uses: sneat-co/cicd/.github/workflows/cf-deploy.yml@main
     with:
       working-directory: landings
-      build-command: pnpm build
+      # PUBLIC_SITE_URL feeds astro.config's canonical/OG/sitemap host. This repo
+      # sets the repo variable to its demo apex (ext-template.sneat.dev); forks
+      # don't inherit repo variables, so they fall back to the example.com
+      # placeholder until they set their own.
+      build-command: PUBLIC_SITE_URL='${{ vars.PUBLIC_SITE_URL }}' pnpm build
       cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       extra-install-directory: "."
     secrets:
