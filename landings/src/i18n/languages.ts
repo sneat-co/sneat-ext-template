@@ -1,9 +1,10 @@
 /**
  * Single source of truth for the locales this landing supports.
  *
- * Consumed by LangSwitcher (the header control), BaseLayout (html lang,
- * og:locale, hreflang alternates) and every page that builds a cross-locale
- * URL. Add a locale here once and those surfaces follow.
+ * Thin wrapper over @sneat/astro's createI18n: the locale plumbing (localeHref,
+ * routeFromPath, hreflang, og:locale) is shared across the Sneat landings and
+ * lives in the package; this module declares THIS landing's locales and
+ * re-exports the bound helpers, so every page and component reads unchanged.
  *
  * ⚠️ Adding a locale here is NOT enough to make it reachable. `worker.js` keeps
  * its own RESERVED_LOCALES list, and any locale missing from it falls through
@@ -24,15 +25,9 @@
  * Why labels and not flag emoji
  * -----------------------------
  * Flags were considered and rejected across the ecosystem. Don't reintroduce
- * them without rereading this:
- *
- *  1. Flags mark countries, not languages. Russian is spoken well beyond
- *     Russia, and a Russian flag erases every one of those speakers. English:
- *     US, UK, Canada, Australia? None is neutral.
- *  2. Windows does not render flag emoji at all — those visitors see the bare
- *     regional-indicator letters in a box. It cannot be fixed from CSS.
- *  3. Screen readers announce flag emoji unpredictably across NVDA/JAWS/
- *     VoiceOver. The language name reads cleanly.
+ * them: flags mark countries not languages (Russian outlives any one flag; no
+ * English flag is neutral), Windows renders none of them, and screen readers
+ * announce them unpredictably. (Full rationale in @sneat/astro.)
  *
  * A note on fonts: the brand font (Montserrat, see tokens.css) ships Latin and
  * Cyrillic, so this landing needs no per-script font gating. If you swap it for
@@ -40,90 +35,26 @@
  * all — that locale silently falls back to system-ui and the whole site looks
  * broken in that language only. Check the subsets before you change the font.
  */
+import { createI18n, type Lang as SharedLang } from '@sneat/astro/i18n';
 
 export type LangCode = 'en' | 'ru';
+export type Lang = SharedLang;
 
-export interface Lang {
-  code: LangCode;
-  /** The language's name in its own language. Never a flag, never a code. */
-  label: string;
-  /**
-   * 2-letter badge for the switcher on narrow screens, where the native label
-   * doesn't fit. The control must never collapse to a bare globe: that tells a
-   * reader neither which language they're in nor that there is another one.
-   *
-   * Written out per locale rather than derived from `code`, because the
-   * derivation is wrong exactly where it matters — 'pt-br' is "PT", 'zh-cn' is
-   * "ZH". Latin letters on purpose («РУ» would be unreadable to the very
-   * non-Russian speaker most likely to be hunting for this control).
-   */
-  short: string;
-  /** BCP 47 tag, for lang=/hreflang= attributes. */
-  tag: string;
-  /** og:locale wants the underscored territory form. */
-  ogLocale: string;
-}
-
-/**
- * English is the default and owns the bare root. Order: default first, then
- * alphabetical by code.
- */
+/** English is the default and owns the bare root. */
 export const DEFAULT_LOCALE: LangCode = 'en';
 
-export const langs: Lang[] = [
-  { code: 'en', label: 'English', short: 'EN', tag: 'en', ogLocale: 'en_GB' },
-  { code: 'ru', label: 'Русский', short: 'RU', tag: 'ru', ogLocale: 'ru_RU' },
-];
+export const i18n = createI18n({
+  defaultLocale: DEFAULT_LOCALE,
+  langs: [
+    { code: 'en', label: 'English', short: 'EN', tag: 'en', ogLocale: 'en_GB' },
+    { code: 'ru', label: 'Русский', short: 'RU', tag: 'ru', ogLocale: 'ru_RU' },
+  ],
+});
 
-export const langByCode = (code: LangCode): Lang => {
-  const lang = langs.find((l) => l.code === code);
-  // Unreachable via LangCode, but reachable from a hand-written string — and a
-  // throw names the locale, where a non-null assertion would hand the caller an
-  // undefined that surfaces three frames later as "cannot read property tag".
-  if (!lang) throw new Error(`Unknown locale: ${code}`);
-  return lang;
-};
-
-/** Matches a leading locale segment, and only a whole segment. */
-const LOCALE_PREFIX = new RegExp(
-  `^/(${langs.map((l) => l.code).join('|')})(?=/|$)`,
-);
-
-/**
- * Detect the locale from a pathname: "/ru/privacy/" → "ru", "/" → "en".
- *
- * Only an exact locale segment counts. This matters more than it looks: an app
- * route like `/my` is also two letters, so anything that treats "any short
- * first segment" as a locale would swallow application routes. Same reasoning
- * as worker.js's explicit RESERVED_LOCALES list.
- */
-export function localeFromPath(path: string): LangCode {
-  return (path.match(LOCALE_PREFIX)?.[1] as LangCode) ?? DEFAULT_LOCALE;
-}
-
-/**
- * Strip the locale prefix to get the locale-independent route.
- * "/en/privacy/" → "/privacy/", "/ru/" → "/", "/" → "/".
- */
-export function routeFromPath(path: string): string {
-  return path.replace(LOCALE_PREFIX, '') || '/';
-}
-
-/**
- * Build the URL for a route in a given locale.
- *
- * The one asymmetry: the English *home* is the bare root `/`, not `/en/` —
- * that's the canonical front door and `/en/` 301s to it (see worker.js). Every
- * other page, English included, carries its locale prefix: `/en/privacy/`,
- * `/ru/privacy/`.
- *
- * That English prefix is load-bearing rather than cosmetic. This landing shares
- * one origin with the root-mounted Angular app, and the `/{locale}/*` subtree
- * is exactly what separates landing space from application space — an
- * unprefixed `/privacy` would collide with the app's route namespace.
- */
-export function localeHref(code: LangCode, route = '/'): string {
-  const r = route.startsWith('/') ? route : `/${route}`;
-  if (code === DEFAULT_LOCALE && r === '/') return '/';
-  return `/${code}${r === '/' ? '/' : r}`;
-}
+export const langs = i18n.langs;
+// Accept a plain `string` (not just LangCode): these are also called while
+// mapping over `langs`, whose element codes the package types as `string`.
+export const langByCode = (code: string): Lang => i18n.langByCode(code);
+export const localeFromPath = (path: string): LangCode => i18n.localeFromPath(path) as LangCode;
+export const routeFromPath = (path: string): string => i18n.routeFromPath(path);
+export const localeHref = (code: string, route = '/'): string => i18n.localeHref(code, route);
