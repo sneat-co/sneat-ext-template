@@ -116,6 +116,59 @@ grep -rIl -E "template[-/.]|templateApp|template[A-Z]|'template'|\"template\"|sc
       "$f"
   done
 
+# --- 3b. Backend Go module (opt-in, SENTINEL-gated) ---
+#
+# backend/ is deliberately excluded from steps 1-3 above (the preserved-
+# directory guards) because an in-place re-scaffold of an EXISTING extension
+# repo may carry a real prior backend that must never be touched. That default
+# has to stay safe even though the template itself now ships a starter
+# backend/ Go module — so this step only fires when backend/go.mod is
+# UNMISTAKABLY the pristine scaffold (its module path still literally says
+# .../template/backend). Any other backend/ — already customized, hand-written,
+# migrated from elsewhere — is left completely alone, matching the same
+# guarantee steps 1-3 already give the rest of the repo.
+backend_sentinel='module github.com/sneat-co/template/backend'
+if [[ -f backend/go.mod ]] && grep -qxF "$backend_sentinel" backend/go.mod; then
+  echo "Customizing backend/ Go module -> ${id}"
+
+  # Rename backend/*4template package directories (deepest first).
+  find backend -depth -type d -name '*template*' |
+    while read -r d; do
+      nd="$(dirname "$d")/$(basename "$d" | sed "s/template/$id/g")"
+      mv "$d" "$nd"
+    done
+
+  # Content replacement, scoped to backend/ only. Same targeted philosophy as
+  # step 3 above (explicit shapes, not a blind regex — and no \b word-boundary
+  # escapes: BSD/macOS sed, which `sed -i ''` below requires, doesn't support
+  # them). Every "template" occurrence the scaffold actually ships falls into
+  # one of these shapes; if you add new scaffold content with a bare lowercase
+  # "template" elsewhere, give it one of these shapes too rather than adding a
+  # catch-all here.
+  grep -rIl "template\|Template\|TEMPLATE" backend |
+    while read -r f; do
+      sed -i '' \
+        -e "s|github.com/sneat-co/template/backend|github.com/sneat-co/${id}/backend|g" \
+        -e "s/4template/4${id}/g" \
+        -e "s/template-/${id}-/g" \
+        -e "s/\"template\"/\"$id\"/g" \
+        -e "s/TEMPLATE/$UP/g" \
+        -e "s/Template/$Id/g" \
+        "$f"
+    done
+
+  # Regenerate go.sum against the renamed module path. Network-dependent (module
+  # proxy); non-fatal so customize.sh still completes offline — go.sum just
+  # needs a manual `go mod tidy` afterwards in that case.
+  if command -v go >/dev/null 2>&1; then
+    ( cd backend && go mod tidy ) || echo "warning: 'go mod tidy' failed in backend/ — run it manually (needs network for the Go module proxy)"
+  else
+    echo "warning: 'go' not found — run 'go mod tidy' in backend/ manually"
+  fi
+else
+  echo "No pristine backend/ template scaffold found — leaving backend/ untouched."
+fi
+
 # --- 4. Clean up ---
 rm -f customize.sh
 
@@ -123,6 +176,9 @@ echo
 echo "Done. Next:"
 echo "  pnpm install            # reconcile renamed workspace packages"
 echo "  pnpm exec nx build ${id}-app"
+if [[ -f backend/go.mod ]]; then
+  echo "  (cd backend && go build ./... && go test ./...)   # verify the backend module"
+fi
 echo
 echo "Repo convention:"
 echo "  ${id}      # product/app/implementation repo customized here"
