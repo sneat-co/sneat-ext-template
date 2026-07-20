@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/dal-go/dalgo/adapters/dalgo2memory"
+	"github.com/sneat-co/sneat-go-core/sneatcoretesting"
 )
 
 // fakeIDGenerator is a trivial IDGenerator fake — no mocking framework needed
@@ -15,7 +15,7 @@ type fakeIDGenerator struct{ next string }
 func (f fakeIDGenerator) NewID(context.Context) (string, error) { return f.next, nil }
 
 func TestFacade_CreateExampleItem(t *testing.T) {
-	f := NewFacade(dalgo2memory.NewDB(), fakeIDGenerator{next: "item1"})
+	f := NewFacade(sneatcoretesting.NewMemoryDB(), fakeIDGenerator{next: "item1"})
 
 	id, err := f.CreateExampleItem(context.Background(), "My item")
 	if err != nil {
@@ -27,7 +27,7 @@ func TestFacade_CreateExampleItem(t *testing.T) {
 }
 
 func TestFacade_CreateExampleItem_ValidationError(t *testing.T) {
-	f := NewFacade(dalgo2memory.NewDB(), fakeIDGenerator{next: "item1"})
+	f := NewFacade(sneatcoretesting.NewMemoryDB(), fakeIDGenerator{next: "item1"})
 
 	if _, err := f.CreateExampleItem(context.Background(), ""); err == nil {
 		t.Error("expected validation error for empty title, got nil")
