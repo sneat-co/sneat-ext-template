@@ -36,7 +36,7 @@
     "@sneat/dto": "0.22.1",
     "@sneat/ext-assetus-components": "0.11.0",
     "@sneat/extension-calendarius-contract": "0.22.1",
-    "@sneat/extension-contactus-contract": "0.12.1",
+    "@sneat/extension-contactus-contract": "0.12.2",
     "@sneat/extension-contactus": "^0.13.0",
     "@sneat/extension-contactus-ui": "^0.13.0",
     "@sneat/extension-template": "workspace:*",
