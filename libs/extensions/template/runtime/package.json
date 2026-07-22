@@ -11,7 +11,7 @@
     "@angular/router": "^21.0.0",
     "@angular/forms": "^21.0.0",
     "@ionic/angular": "^8.0.0",
-    "@ionic/core": "8.8.6",
+    "@ionic/core": "8.8.14",
     "rxjs": "^7.0.0",
     "@sneat/auth-core": "^0.22.1",
     "@sneat/auth-models": "^0.22.1",
