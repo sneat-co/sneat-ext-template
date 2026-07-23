@@ -169,6 +169,21 @@ else
   echo "No pristine backend/ template scaffold found — leaving backend/ untouched."
 fi
 
+# --- 3c. This template repo's own demo-deploy artifacts (not for forks) ---
+#
+# wrangler.demo.jsonc + the `wrangler-config: wrangler.demo.jsonc` line in
+# deploy-landings.yml exist only so sneat-ext-template can self-host its own
+# demo (ext-template.sneat.dev) under a worker name separate from the
+# fork-facing `name: "template"` placeholder in wrangler.jsonc. A fork has no
+# use for either — remove the demo config and point deploy-landings.yml back
+# at the default wrangler.jsonc (cf-deploy.yml's own default when the input is
+# omitted).
+if [[ -f landings/wrangler.demo.jsonc ]]; then
+  rm -f landings/wrangler.demo.jsonc
+  sed -i '' '/wrangler-config: wrangler\.demo\.jsonc/d' .github/workflows/deploy-landings.yml
+  echo "Removed the template repo's own demo deploy config (wrangler.demo.jsonc)."
+fi
+
 # --- 4. Clean up ---
 rm -f customize.sh
 
