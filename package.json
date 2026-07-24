@@ -100,7 +100,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.0.0",
     "jiti": "2.4.2",
-    "jsdom": "~22.1.0",
+    "jsdom": "~29.1.0",
     "jsonc-eslint-parser": "^3.0.0",
     "ng-packagr": "~21.2.5",
     "nx": "22.7.7",
