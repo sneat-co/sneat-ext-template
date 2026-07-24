@@ -102,7 +102,7 @@
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^3.0.0",
-    "ng-packagr": "~21.2.5",
+    "ng-packagr": "~22.0.0",
     "nx": "22.7.7",
     "postcss": "^8.5.17",
     "prettier": "^3.9.5",
