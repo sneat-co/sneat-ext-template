@@ -59,7 +59,12 @@ export class NewListDialogComponent implements AfterViewInit {
   protected readonly listNameInput = viewChild<IonInput>('listNameInput');
 
   public readonly listName = signal('');
-  public readonly visibility = signal<'private' | 'family'>('private');
+  // 'personal' | 'family' are SpaceType values, not free-form labels: this
+  // feeds straight into IListInfo.space.type below. The template's radio
+  // group already emits "personal"; the signal said 'private', a space type
+  // that no longer exists, so the default was wrong at runtime and not only
+  // to the type checker.
+  public readonly visibility = signal<'personal' | 'family'>('personal');
 
   @Input() title?: string;
   @Input() listType?: ListType;
