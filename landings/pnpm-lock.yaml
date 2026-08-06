@@ -12,8 +12,8 @@ importers:
         specifier: ^3.2.0
         version: 3.7.3
       '@sneat/astro':
-        specifier: ^0.1.0
-        version: 0.1.0(astro@7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0))
+        specifier: ^0.2.0
+        version: 0.2.0(astro@7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0))
       astro:
         specifier: ^7.0.0
         version: 7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0)
@@ -1080,8 +1080,8 @@ packages:
     resolution: {integrity: sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw==}
     engines: {node: '>=18'}
 
-  '@sneat/astro@0.1.0':
-    resolution: {integrity: sha512-0IZUUMm0fg1H+ZVdiX89v5VjcdMTgn+tfPj39U8LnvjT9LTNesaddUipJMx5YQ4oIsqmpRfvyYj7P8cAwZwmlA==}
+  '@sneat/astro@0.2.0':
+    resolution: {integrity: sha512-rZvoxsQUdZTJG9cs/qSABKefj1vwFnEVZmi8Bz0yQpo8BK1q2gaJke9bL00unFB0a6mUM8LoaSPjn5eBwuyryQ==}
     peerDependencies:
       astro: '>=7'
 
@@ -2986,7 +2986,7 @@ snapshots:
 
   '@sindresorhus/is@7.2.0': {}
 
-  '@sneat/astro@0.1.0(astro@7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0))':
+  '@sneat/astro@0.2.0(astro@7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0))':
     dependencies:
       astro: 7.1.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.2)(rollup@4.62.2)(yaml@2.9.0)
 
