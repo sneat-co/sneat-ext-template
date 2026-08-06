@@ -1,7 +1,7 @@
 package models4template
 
 import (
-	"github.com/dal-go/dalgo/dal"
+	"github.com/dal-go/record"
 )
 
 // ItemsCollection is the dalgo collection example items are stored in.
@@ -21,13 +21,13 @@ type ExampleItemDbo struct {
 }
 
 // NewExampleItemKey builds the dalgo key for an example item.
-func NewExampleItemKey(id string) *dal.Key {
-	return dal.NewKeyWithID(ItemsCollection, id)
+func NewExampleItemKey(id string) *record.Key {
+	return record.NewKeyWithID(ItemsCollection, id)
 }
 
 // NewExampleItemRecord wraps a fresh ExampleItemDbo in its dalgo record,
 // returning both the record (for db calls) and the DBO (to populate fields on).
-func NewExampleItemRecord(id string) (dal.Record, *ExampleItemDbo) {
+func NewExampleItemRecord(id string) (record.Record, *ExampleItemDbo) {
 	dbo := new(ExampleItemDbo)
-	return dal.NewRecordWithData(NewExampleItemKey(id), dbo), dbo
+	return record.NewRecordWithData(NewExampleItemKey(id), dbo), dbo
 }
