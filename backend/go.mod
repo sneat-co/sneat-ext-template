@@ -3,7 +3,7 @@ module github.com/sneat-co/template/backend
 go 1.26
 
 require (
-	github.com/dal-go/dalgo v0.64.4
+	github.com/dal-go/dalgo v0.64.5
 	github.com/dal-go/record v0.1.2
 	github.com/sneat-co/sneat-go-core v0.60.2
 )
