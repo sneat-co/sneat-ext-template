@@ -1,18 +1,3 @@
-# Force a single copy of every framework package the extensions share.
-#
-# The split @sneat extensions (ext-assetus-components, mod-assetus-core,
-# extension-calendarius-contract, extension-contactus-contract,
-# extension-contactus, extension-contactus-ui) peer-depend on OLDER @sneat/*
-# and @angular/* releases than this app does. Without an override pnpm keeps
-# both copies, and TypeScript treats two physically distinct copies of the
-# same package as unrelated nominal types — so SpaceType from @sneat/core
-# 0.22.1 is "not assignable" to SpaceType from 0.24.0 (TS2345), and likewise
-# for HttpParams across two @angular/common copies.
-#
-# Pinning only the space-* packages is not enough: they sit on top of
-# @sneat/api and @sneat/core, so those fracture underneath and reintroduce
-# the same error one layer down. Every shared package has to land on one
-# version, not just the ones named in the error you happen to be looking at.
 overrides:
   # @sneat/* framework libraries — all on the version this app depends on.
   '@sneat/api': 0.24.0
@@ -48,8 +33,8 @@ overrides:
   # version — same version, different peer resolution — and ModuleSpaceItemService
   # from one instance is not assignable to the other. Deduping the version alone
   # is not enough; the peers have to agree too.
-  '@ionic/angular': 8.8.16
-  '@ionic/core': 8.8.16
+  '@ionic/angular': 8.8.17
+  '@ionic/core': 8.8.17
   # Dependabot CVE fixes forced onto transitive deps (firebase@12 / dev tooling).
   # `>=` floors so pnpm resolves the highest compatible patched version rather
   # than pinning. Prune an entry once the direct dep that pulls the vulnerable
