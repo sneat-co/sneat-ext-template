@@ -6,6 +6,7 @@ overrides:
   # whatever @angular/build itself depends on removes the fracture instead of
   # just papering over the chokidar peer warning.
   '@angular-devkit/core': 22.1.5 # keep in sync with the @angular/build devDependency pin
+  '@angular-devkit/schematics': 22.1.5 # keep in sync with the @angular/build devDependency pin
   '@angular/platform-server': 22.1.3
   '@angular/platform-browser-dynamic': 22.1.3
   '@sneat/api-firebase-auth': 0.26.4
