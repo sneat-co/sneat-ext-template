@@ -30,7 +30,7 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
-} from '@ionic/angular/standalone';
+} from '@ionic/angular';
 import { APP_INFO, eq, IAppInfo } from '@sneat/core';
 import { SpaceServiceModule } from '@sneat/space-services';
 import {
