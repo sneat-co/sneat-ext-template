@@ -56,6 +56,10 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "// options.prebundle": "Vite's dev-server dependency pre-bundling mishandles @ionic-native/core's partially-Ivy-compiled output, throwing 'needs to be compiled using the JIT compiler, but @angular/compiler is not available' at runtime in dev-server (production `nx build` is unaffected — it AOT-compiles the whole graph, no Vite prebundling involved).",
+      "options": {
+        "prebundle": false
+      },
       "configurations": {
         "production": {
           "buildTarget": "template-app:build:production"
