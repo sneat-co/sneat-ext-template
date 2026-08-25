@@ -1,4 +1,12 @@
 overrides:
+  # zone.js is already fully dropped here (no devDependency, no resolution
+  # anywhere in the lockfile). This override is defense-in-depth for the
+  # canonical extension template: @angular/core, @ionic/angular, and
+  # @analogjs/vitest-angular all still declare it as an OPTIONAL peer, and
+  # pnpm's default peer-resolution eagerly satisfies optional peers whenever
+  # a compatible version is resolvable. `-` tells pnpm to never resolve it,
+  # so a future extension built from this template inherits the ban.
+  'zone.js': '-'
   # @angular/fire@20.0.1's schematics (ng-add, unused at build/test time) still
   # drag in @angular-devkit/core@20.3.32 -> @angular-devkit/schematics@20.3.32,
   # a stray old version pair that fractures into two physical instances and
