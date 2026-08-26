@@ -79,7 +79,8 @@ grep -rIl -E "template[-/.]|templateApp|template[A-Z]|'template'|\"template\"|sc
   --exclude-dir=.nx --exclude-dir=.angular \
   --exclude-dir='legacy-*' --exclude-dir=backend --exclude=pnpm-lock.yaml |
   while read -r f; do
-    # Protect the CSS Grid `grid-template[-columns|-rows|-areas]` keyword from
+    # Protect the CSS Grid `grid-template[-columns|-rows|-areas]` keyword and
+    # the `@angular-eslint/template/*` eslint rule namespace from
     # the `template-` rule below (used by the landings/ stylesheet), then
     # restore it. Without this, `grid-template-columns` -> `grid-<id>-columns`.
     # camelCase identifiers the template exports with a lowercase `template`
@@ -99,6 +100,7 @@ grep -rIl -E "template[-/.]|templateApp|template[A-Z]|'template'|\"template\"|sc
     #   template.app — comment references in main.ts, environment.ts, etc.
     sed -i '' \
       -e "s/grid-template/@@GRIDTPL@@/g" \
+      -e "s|@angular-eslint/template|@@NGESLINTTPL@@|g" \
       -e "s|@sneat/extension-template|@sneat/extension-${id}|g" \
       -e "s/provide-template/provide-${id}/g" \
       -e "s/domain:template/domain:${id}/g" \
@@ -115,6 +117,7 @@ grep -rIl -E "template[-/.]|templateApp|template[A-Z]|'template'|\"template\"|sc
       -e "s/TEMPLATE/$UP/g" \
       -e "s/Template/$Id/g" \
       -e "s/@@GRIDTPL@@/grid-template/g" \
+      -e "s|@@NGESLINTTPL@@|@angular-eslint/template|g" \
       "$f"
   done
 
