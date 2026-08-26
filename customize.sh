@@ -13,10 +13,12 @@
 # and titles. It does NOT touch pnpm-lock.yaml — run `pnpm install` afterwards
 # so pnpm reconciles the renamed workspace packages.
 #
-# This script customizes the <id> product/app repo. If the extension needs a
-# public definition repo, create ext-<id> separately with typespec/, backend/,
-# and frontend/. The local contract lib is a starter surface that can graduate to
-# ext-<id>/frontend.
+# This script customizes the <id> product/app repo. The extension's contract
+# defaults to living as libs/<id>/ in sneat-co/sneat-ext-contracts (see its
+# README + the scaffold generator) — NOT a standalone repo. Only create
+# ext-<id> separately (with typespec/, backend/, and frontend/, from
+# sneat-ext-contract-template) when a standalone contract repo has been
+# explicitly decided by the founder.
 #
 # The replacement is intentionally TARGETED (not a blind s/template/<id>/g) so
 # it never corrupts Angular keywords like `templateUrl`, inline `template:`, or
@@ -197,4 +199,8 @@ fi
 echo
 echo "Repo convention:"
 echo "  ${id}      # product/app/implementation repo customized here"
-echo "  ext-${id}  # public extension-definition repo (typespec/, backend/, frontend/) if needed"
+echo "  Contract:  @sneat/extension-${id}-contract defaults to libs/${id}/ in"
+echo "             sneat-co/sneat-ext-contracts (see its README + the scaffold"
+echo "             generator). Only create a standalone ext-${id} repo (from"
+echo "             sneat-ext-contract-template) when that has been explicitly"
+echo "             decided by the founder."

@@ -23,7 +23,6 @@ overrides:
   '@sneat/app-ionic': 0.26.4
   '@sneat/app-public': 0.26.4
   '@sneat/core-public': 0.26.4
-  '@sneat/extension-calendarius-contract': 0.26.4
   '@sneat/extension-calendarius-internal': 0.26.4
   '@sneat/extension-calendarius-shared': 0.26.4
   '@sneat/space-nav-ionic': 0.26.4
