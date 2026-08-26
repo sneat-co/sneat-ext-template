@@ -64,8 +64,9 @@ to configure — it inherits the org's `SNEAT_CI_READWRITE_TOKEN`.
 ## Where shared types go
 
 If a type here turns out to be needed by more than one extension, it likely
-belongs in the public `ext-<id>` definition repo's `backend/` (a contract
-module), not here — see the architecture doc's "decision ladder" for exactly
-which packages move (`dto4<id>`, brief/read models, facade *interfaces*) versus
-which stay private to this implementation (`dbo4<id>`, `dal4<id>`, facade
-*implementations*).
+belongs in the extension's contract module, not here — by default that's
+`<id>/go.mod` in `sneat-co/sneat-ext-contracts`; a standalone `ext-<id>`
+repo's `backend/` is the explicit-decision exception. See the architecture
+doc's "decision ladder" for exactly which packages move (`dto4<id>`,
+brief/read models, facade *interfaces*) versus which stay private to this
+implementation (`dbo4<id>`, `dal4<id>`, facade *implementations*).

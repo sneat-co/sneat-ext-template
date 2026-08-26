@@ -1,12 +1,21 @@
 # sneat-ext-template
 
+> **DEFAULT: a new extension's contract is created as `libs/<family>/` in
+> [`sneat-co/sneat-ext-contracts`](https://github.com/sneat-co/sneat-ext-contracts)
+> (see its README + the scaffold generator). A standalone `ext-<id>` contract
+> repo, scaffolded from
+> [`sneat-ext-contract-template`](../sneat-ext-contract-template), is used
+> ONLY when that has been explicitly decided by the founder.**
+
 Starter implementation repository for a Sneat extension. It contains an Nx
 workspace, Angular/Ionic app, and one host-facing runtime package.
 
 ## Repository model
 
 - `<id>` owns the implementation app and `@sneat/extension-<id>` runtime.
-- `ext-<id>` owns the public `@sneat/extension-<id>-contract` package.
+- The public `@sneat/extension-<id>-contract` package defaults to living in
+  `sneat-ext-contracts` (`libs/<id>/`). A standalone `ext-<id>` repo owning it
+  instead is the explicit-decision exception.
 
 The implementation never copies contract source. It consumes the published
 contract package just as another extension would.
@@ -23,9 +32,11 @@ landings/               # Astro marketing site (see landings/README.md)
 backend/                # Go domain module (see backend/README.md)
 ```
 
-The corresponding [`sneat-ext-contract-template`](../sneat-ext-contract-template)
-repository owns
-`@sneat/extension-template-contract`.
+This demo pairs with the exception-path
+[`sneat-ext-contract-template`](../sneat-ext-contract-template)
+repository, which owns
+`@sneat/extension-template-contract`. A real new extension should default to
+`sneat-ext-contracts` instead — see the banner above.
 
 ## Backend
 
@@ -41,8 +52,10 @@ CI (`.github/workflows/backend-ci.yml`) runs lint/test/build on every push and
 PR touching `backend/**`, and auto-tags the next `backend/vX.Y.Z` release on
 push to `main`.
 
-This is distinct from `ext-<id>`'s own `backend/` (the **contract** module —
-`dto4<id>` types, briefs, facade interfaces). This one is the
+This is distinct from the extension's **contract** module (`dto4<id>` types,
+briefs, facade interfaces) — by default `<id>/go.mod` in
+`sneat-co/sneat-ext-contracts`, or a standalone `ext-<id>` repo's `backend/`
+in the explicit-decision exception case. This one is the
 **implementation** — DBOs, storage, facade bodies.
 
 ## Runtime API
@@ -67,8 +80,11 @@ different extension's runtime package. Reusable components deserve a separate
 ## Create a new extension
 
 Clone this repository as `<id>`, rename `template` with `./customize.sh <id>`,
-and create a paired `ext-<id>` repository from `sneat-ext-contract-template`. Publish the
-contract first, update the implementation's dependency range, then build:
+and add the contract as `libs/<id>/` in `sneat-ext-contracts` (the default —
+see its README + the scaffold generator). Only when a standalone contract
+repo has been explicitly decided, create a paired `ext-<id>` repository from
+`sneat-ext-contract-template` instead. Publish the contract first, update the
+implementation's dependency range, then build:
 
 ```sh
 pnpm install
