@@ -4,8 +4,9 @@ The `landings/` directory is a static **Astro** marketing site, deployed to
 **Cloudflare** (Workers static assets) at your product's apex domain. It is the
 public, crawlable front door. The signed-in Angular app is **mounted at the root
 of the same origin** (not a subdomain — so the landing can read the Firebase auth
-session and show the signed-in user), and a small Cloudflare **Worker** routes
-each request to either the landing or the app. See
+session and show the signed-in user), and Cloudflare static-asset rules route
+each request to either the landing or the app — with **no Worker script**, so no
+request counts against the Workers request quota. See
 [Routing model](#routing-model).
 
 This follows the Sneat **site-hosting-pattern** — the canonical spec lives in
@@ -25,13 +26,14 @@ pnpm dev                # Astro dev server (landing pages only)
 pnpm run build:landing  # just the Astro landing  -> landings/dist
 pnpm build              # combined build: landing + Angular app -> landings/dist
 npx wrangler dev        # preview the REAL routing (landing + app) locally
+pnpm test               # routing contract tests (_redirects, assets-only config)
 ```
 
 `pnpm build` also builds the Angular app (`nx build <id>-app --base-href=/`) and
 merges it into `landings/dist` via `scripts/assemble-app.mjs`, so it needs the
 repo-root workspace deps installed (`pnpm install` at the repo root), not just
 `landings/`. Preview with `wrangler dev` rather than `astro preview` — only the
-Worker reproduces the landing/app split and the SPA-shell fallback.
+`wrangler dev` reproduces the landing/app split (`_redirects`) and the SPA-shell fallback.
 
 ---
 
@@ -115,13 +117,10 @@ correct setup. The scaffold is apex-only out of the box (one custom-domain route
 no `www`).
 
 **Do NOT** make `www` work by adding it as a *second custom domain* — that
-serves the same content on two hosts (duplicate content). And **do not** handle
-`www` in the routing Worker — a **zone Redirect Rule** runs at Cloudflare's edge
-*before* the Worker, costs nothing, and keeps `www` out of your routing code.
-
-(This scaffold does run a Worker with `run_worker_first` — but for an essential
-reason: the landing/app [routing split](#routing-model), not a `www` redirect. A
-Redirect Rule short-circuits `www` before that Worker ever runs.)
+serves the same content on two hosts (duplicate content). And **do not** try to
+handle `www` in `_redirects` — it cannot match on host. A **zone Redirect Rule**
+runs at Cloudflare's edge before the deployment, costs nothing, and keeps `www`
+out of your routing files.
 
 ### If you do want `www` → use a zone Redirect Rule (301 to apex)
 
@@ -183,7 +182,7 @@ dashboard (or with a purpose-scoped API token).
 
 ## Routing model
 
-One origin, one Worker, two builds. Per
+One origin, one assets-only Worker (no script), two builds. Per
 [backstage ADR 0001](https://github.com/sneat-co/backstage/blob/main/docs/decisions/0001-root-mounted-app-routing.md)
 and
 [sneat-libs `routing-and-deployment.md`](https://github.com/sneat-co/sneat-libs/blob/main/docs/extension-standards/routing-and-deployment.md):
@@ -195,37 +194,46 @@ and
   |---|---|
   | `/`, `/{locale}/*`, `/static/*`, `/.well-known/*`, `/robots.txt`, `/sitemap*.xml`, `/favicon.*`, `/manifest.webmanifest` | `/space/...`, `/my`, `/my/settings`, `/event/:id`, `/u/:handle`, `/login`, … |
 
-- **Locales are an explicit allow-list** (`RESERVED_LOCALES` in `worker.js`), not
-  "any two-letter segment" — otherwise `/my` (the personal dashboard) collides
-  with a locale.
+- **No path lists to keep in sync.** A path with a file gets that file; any other
+  path gets the Angular SPA shell (`not_found_handling:
+  "single-page-application"`). Adding a locale needs no routing change — its pages
+  are simply files under `dist/{locale}/`. Trade-off: a missing landing page (a typo
+  in `/en/...`) answers 200 with the app shell instead of a 404.
 - **Content pages live under `/{locale}/*`** (`landings/src/pages/en/*`); the home
   stays at `/`. Don't create flat `/about`, `/pricing`, `/privacy` — use
   `/en/about`, `/en/pricing`, `/en/privacy`.
 - `/my` is an application **section**, never the global app prefix (many app pages
   are shared/public: `/event/:id`, `/u/:handle`). Do **not** mount the app under
-  `/pwa/` or `/app/` — `worker.js` keeps a `/pwa/*` → `/*` 301 as legacy compat
-  only.
+  `/pwa/` or `/app/` — `public/_redirects` keeps a `/pwa/*` → `/*` 301 as legacy
+  compat only.
 - **The service worker stays disabled**; when enabled it must not intercept the
   reserved public paths.
 
 ### How it's wired
 
-- `landings/worker.js` — the edge split (`isReservedPublicPath`): reserved →
-  landing asset (or its own 404); else → the app SPA shell (`index.app.html`),
-  returned as 200 at the requested URL.
-- `landings/wrangler.jsonc` — `main: worker.js` + `assets.binding: ASSETS` +
-  `run_worker_first: true` so the Worker is authoritative.
+- `landings/wrangler.jsonc` — **no `main`**, no `run_worker_first`;
+  `assets.not_found_handling: "single-page-application"`. Static asset requests are
+  free and unlimited on the Workers Free plan (a Worker with `main` +
+  `run_worker_first` is billed per request and 1027s at 100k/day account-wide).
+- `landings/public/_redirects` — runs *before* assets: `/ → /landing` (200
+  rewrite to the landing home), `/landing → /` (301), `/en` and `/en/` → `/`,
+  `/pwa/*` → `/*`, and `/privacy`, `/terms` → `/en/...`. Never add a splat that
+  could shadow a landing or app file (rewrites are not skipped when a file exists).
+  Target `/landing`, not `/landing.html` (that answers 307 under
+  `html_handling`).
 - `landings/scripts/assemble-app.mjs` — `pnpm build` builds the Astro landing,
-  builds the app (`--base-href=/`), and merges the app into `landings/dist`,
-  renaming the app `index.html` → `index.app.html` so it doesn't clobber the
-  landing home. Angular's hashed JS/CSS + `assets/` don't collide with Astro's
-  `_astro/`.
+  builds the app (`--base-href=/`), and merges the app into `landings/dist`: the
+  landing home `index.html` is renamed `landing.html`, and the app's `index.html`
+  becomes the root SPA shell. Angular's hashed JS/CSS + `assets/` don't collide with
+  Astro's `_astro/`.
+- Need server code on a few paths (KV write, secret injection, API proxy)? Keep
+  `main` but set `assets.run_worker_first` to an **array of only those paths**.
 
 ## Topology recap
 
 - **Landing (this `landings/`)** = Astro static build.
 - **App** = the Angular SPA in `apps/<id>-app`, built with `--base-href=/`.
-- **One origin, two builds, one distribution**, served by **one** Cloudflare
-  Worker (`landings/worker.js`) that splits landing vs app per the
-  [Routing model](#routing-model). See the
+- **One origin, two builds, one distribution**, served by **one** assets-only
+  Cloudflare Worker that splits landing vs app via `_redirects` and the SPA fallback
+  per the [Routing model](#routing-model). See the
   [site-hosting-pattern spec](https://github.com/sneat-co/backstage/blob/main/spec/features/site-hosting-pattern/README.md).
