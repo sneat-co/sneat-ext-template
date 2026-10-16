@@ -189,6 +189,13 @@ if [[ -f landings/wrangler.demo.jsonc ]]; then
   echo "Removed the template repo's own demo deploy config (wrangler.demo.jsonc)."
 fi
 
+# --- 3d. Worker name placeholder -> extension id ---
+# landings/wrangler.jsonc ships `"name": "REPLACE-ME-before-deploy"` so a fork
+# that skips this script can never deploy a Worker called `template`.
+if [[ -f landings/wrangler.jsonc ]]; then
+  sed -i '' "s/REPLACE-ME-before-deploy/${id}/" landings/wrangler.jsonc
+fi
+
 # --- 4. Clean up ---
 rm -f customize.sh
 

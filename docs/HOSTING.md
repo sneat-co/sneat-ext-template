@@ -53,8 +53,9 @@ The scaffold ships with `example.com` placeholders. Replace them with your apex:
 | `landings/wrangler.jsonc` | the `routes[].pattern` custom-domain entry |
 | `landings/public/robots.txt` | the `Sitemap:` line |
 
-The worker `name` in `wrangler.jsonc` is `template` and is renamed to your
-extension id by `customize.sh`.
+The worker `name` in `wrangler.jsonc` is the placeholder `REPLACE-ME-before-deploy`
+and is renamed to your extension id by `customize.sh`. Never deploy under the
+placeholder: each Worker consumes a slot on the Cloudflare Free plan.
 
 ### 3. Attach the apex as a Cloudflare Custom Domain
 

@@ -79,7 +79,10 @@ different extension's runtime package. Reusable components deserve a separate
 
 ## Create a new extension
 
-Clone this repository as `<id>`, rename `template` with `./customize.sh <id>`,
+Clone this repository as `<id>`, rename `template` with `./customize.sh <id>`
+(this also replaces the `REPLACE-ME-before-deploy` Cloudflare Worker name in
+`landings/wrangler.jsonc`; creating a Worker consumes a slot on the Free plan,
+so never deploy under a placeholder name),
 and add the contract as `libs/<id>/` in `sneat-ext-contracts` (the default —
 see its README + the scaffold generator). Only when a standalone contract
 repo has been explicitly decided, create a paired `ext-<id>` repository from
