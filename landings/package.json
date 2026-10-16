@@ -11,6 +11,7 @@
     "build:app": "cd .. && npx nx build template-app --base-href=/",
     "check": "astro check",
     "preview": "astro preview",
+    "test": "node --test test/*.test.mjs",
     "astro": "astro"
   },
   "dependencies": {
