@@ -1,7 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // `template` is renamed to your extension id by ./customize.sh.
-  "name": "template",
+  // PLACEHOLDER that must not deploy: ./customize.sh renames it to your extension
+  // id. Never rename it to `template` — a Worker with that name once consumed a
+  // slot on the Cloudflare Free plan (100 Workers) for nothing.
+  "name": "REPLACE-ME-before-deploy",
   "compatibility_date": "2026-06-23",
   "workers_dev": true,
   // Edge router: reserved public paths -> landing; everything else -> the
