@@ -34,3 +34,4 @@ jobs:
       GOPRIVATE: github.com/sneat-co
       goprivate_git_host: github.com/sneat-co
       tag_prefix: backend/v
+      min_test_coverage_percent: 100
