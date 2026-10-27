@@ -1,5 +1,15 @@
 {
   "name": "@sneat/extension-media-contract",
   "version": "0.1.1",
-  "private": true
+  "description": "Minimal workspace stub for the @sneat/media transitive dependency contract.",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  }
 }

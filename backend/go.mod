@@ -7,7 +7,7 @@ toolchain go1.27.3
 require (
 	github.com/dal-go/dalgo v0.95.3
 	github.com/dal-go/record v0.1.5
-	github.com/sneat-co/sneat-go-core v0.71.11
+	github.com/sneat-co/sneat-go-core v0.72.0
 )
 
 require (
@@ -19,4 +19,5 @@ require (
 	github.com/strongo/random v0.0.3 // indirect
 	github.com/strongo/validation v0.0.17 // indirect
 	golang.org/x/sys v0.30.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
