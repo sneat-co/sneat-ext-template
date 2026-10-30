@@ -5,9 +5,9 @@ go 1.26.0
 toolchain go1.27.3
 
 require (
-	github.com/dal-go/dalgo v0.95.4
+	github.com/dal-go/dalgo v0.95.5
 	github.com/dal-go/record v0.1.5
-	github.com/sneat-co/sneat-go-core v0.73.3
+	github.com/sneat-co/sneat-go-core v0.74.1
 )
 
 require (
